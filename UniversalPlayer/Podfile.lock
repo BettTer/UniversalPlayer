@@ -1,0 +1,16 @@
+PODS:
+  - StreamingKit (0.1.30)
+
+DEPENDENCIES:
+  - StreamingKit
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - StreamingKit
+
+SPEC CHECKSUMS:
+  StreamingKit: 70ca8608c206864b4d54a577eacb3c8bf7c72209
+
+PODFILE CHECKSUM: 9a8dc384667fafc3034516706caeba203c1042aa
+
+COCOAPODS: 1.8.4
