@@ -8,7 +8,6 @@
 
 import UIKit
 import AVFoundation
-import StreamingKit
 
 class AudioTool: NSObject {
     static let shared = AudioTool()
@@ -45,31 +44,7 @@ class AudioTool: NSObject {
         
     }
     
-    /// bridge
-    func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
-        return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
-    }
 
-    func bridge<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
-        return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
-    }
-
-    func bridgeRetained<T : AnyObject>(obj : T) -> UnsafeRawPointer {
-        return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
-    }
-
-    func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
-        return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
-    }
-    
-    func test() {
-//        let player = STKAudioPlayer()
-//        player.play(URL.init(string: "")!)
-//        
-//        let s = AudioFileStreamOpen(bridge(obj: self), <#T##inPropertyListenerProc: AudioFileStream_PropertyListenerProc##AudioFileStream_PropertyListenerProc##(UnsafeMutableRawPointer, AudioFileStreamID, AudioFileStreamPropertyID, UnsafeMutablePointer<AudioFileStreamPropertyFlags>) -> Void#>, <#T##inPacketsProc: AudioFileStream_PacketsProc##AudioFileStream_PacketsProc##(UnsafeMutableRawPointer, UInt32, UInt32, UnsafeRawPointer, UnsafeMutablePointer<AudioStreamPacketDescription>) -> Void#>, <#T##inFileTypeHint: AudioFileTypeID##AudioFileTypeID#>, <#T##outAudioFileStream: UnsafeMutablePointer<AudioFileStreamID?>##UnsafeMutablePointer<AudioFileStreamID?>#>)
-        
-        
-    }
     
     
 }
