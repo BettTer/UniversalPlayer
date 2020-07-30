@@ -9,32 +9,54 @@
 import UIKit
 import AVFoundation
 import StreamingKit
+import CoreAudio
 
 class AudioStreamManager: NSObject {
+    let fileType: AudioFileTypeID!
+    let fileSize: Int!
     
-    var streamID: AudioFileStreamID?
+    var streamId: AudioFileStreamID?
     
-    func setAudioFileStreamOpen() {
+    init(fileType: AudioFileTypeID = 0, fileSize: Int, callback: (NSError?) -> Void) {
+        self.fileType = fileType
+        self.fileSize = fileSize
         
-        let inClientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
+        super.init()
         
-        let status = AudioFileStreamOpen(inClientData, { (clientData, streamId, propertyId, flags) in
-            AudioStreamManager.propertyListenerProc(clientData: clientData, streamId: streamId, propertyId: propertyId, flags: flags)
-
-        },{ (clientData, numberBytes, numberPackets, inputData, packetDescriptions) in
-            AudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptions: packetDescriptions)
-
-        }, 0, &streamID)
-        
-        if status == noErr {
-            print("setAudioFileStreamOpen成功")
+        openAudioFileStream(callback: callback)
+    }
+    
+    deinit {
+        if streamId != nil {
+            /// 关闭
             
-        }else {
-            print("setAudioFileStreamOpen失败")
+        }
+    }
+    
+    func openAudioFileStream(callback: (NSError?) -> Void) {
+        let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
+        
+        let status: OSStatus = AudioFileStreamOpen(clientData, { (selfPointer, streamId, propertyId, flags) in
+            AudioStreamManager.propertyListener(inClientData: clientData, streamId: streamId, propertyId: propertyId, ioFlags: flags)
+            
+        }, { (clientData, numberBytes, numberPackets, inputData, packetDescriptions) in
+            AudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions)
+
+        }, fileType, &streamId)
+                
+        var error: NSError? = nil
+        
+        if status != noErr {
+            error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
             
         }
         
+        callback(error)
+        
+        
     }
+    
+
     
     func setAudioFileStreamParseBytes() {
         
@@ -57,17 +79,17 @@ class AudioStreamManager: NSObject {
 
 }
 
-// MARK: - 回调
+// MARK: - 静态监听
 extension AudioStreamManager {
-    /// 歌曲信息解析的回调
+    /// 歌曲信息解析监听
     /// - Parameters:
-    ///   - clientData: 上下文对象
-    ///   - streamId: <#streamId description#>
-    ///   - propertyId: <#propertyId description#>
-    ///   - flags: <#flags description#>
-    static func propertyListenerProc(clientData: UnsafeMutableRawPointer, streamId: AudioFileStreamID, propertyId: AudioFileStreamPropertyID, flags: UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
+    ///   - inClientData: 上下文对象
+    ///   - streamId: 当前文件流Id
+    ///   - propertyId: 当前解析的信息Id
+    ///   - ioFlags: 返回参数
+    static func propertyListener(inClientData: UnsafeMutableRawPointer, streamId: AudioFileStreamID, propertyId: AudioFileStreamPropertyID, ioFlags: UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
         
-        let unsafeRawPointer = UnsafeRawPointer.init(clientData)
+        let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
         let manager: AudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         switch propertyId {
@@ -91,22 +113,61 @@ extension AudioStreamManager {
         }
         
         
-        /*
-         STKAudioPlayer* player = (__bridge STKAudioPlayer*)clientData;
-         
-         [player handlePropertyChangeForFileStream:audioFileStream fileStreamPropertyID:propertyId ioFlags:flags];
-         */
-        
     }
     
-    /// 分离帧的回调
+    /// 分离帧监听
     /// - Parameters:
-    ///   - clientData: <#clientData description#>
-    ///   - numberBytes: <#numberBytes description#>
-    ///   - numberPackets: <#numberPackets description#>
-    ///   - inputData: <#inputData description#>
-    ///   - packetDescriptions: <#packetDescriptions description#>
-    static func packetsProc(clientData: UnsafeMutableRawPointer, numberBytes: UInt32, numberPackets:  UInt32, inputData: UnsafeRawPointer, packetDescriptions: UnsafeMutablePointer<AudioStreamPacketDescription>)  {
+    ///   - clientData: 上下文对象
+    ///   - numberBytes: 本次处理的数据大小
+    ///   - numberPackets: 本次总共处理了多少帧
+    ///   - inputData: 本次处理的所有数据
+    ///   - packetDescriptions: AudioStreamPacketDescription数组(存储了每一帧数据是从第几个字节开始的，这一帧总共多少字节)
+    /*
+     struct  AudioStreamPacketDescription
+     {
+         SInt64  mStartOffset;
+         UInt32  mVariableFramesInPacket;
+         UInt32  mDataByteSize;
+     };
+     */
+    static func packetsProc(clientData: UnsafeMutableRawPointer, numberBytes: UInt32, numberPackets:  UInt32, inputData: UnsafeRawPointer, packetDescriptionsPointer: UnsafeMutablePointer<AudioStreamPacketDescription>)  {
+        
+        guard numberBytes != 0 && numberPackets != 0 else {
+            return
+            
+        }
+        
+        var deletePackDesc = false
+        
+        var packetDescriptions = packetDescriptionsPointer.pointee
+        
+        if packetDescriptions == nil { // * 按照CBR处理，平均每一帧的数据后生成packetDescriptioins
+            deletePackDesc = true
+            let packetSize = numberBytes / numberPackets
+            
+            packetDescriptions = AudioStreamPacketDescription.init(mStartOffset: 0, mVariableFramesInPacket: numberPackets, mDataByteSize: MemoryLayout.size(ofValue: AudioStreamPacketDescription.self) as! UInt32)
+            
+            
+            for index in 0 ..< numberPackets {
+                let packetOffset = packetSize * index
+                
+                
+                
+            }
+            
+//            AudioStreamPacketDescription
+//            packetDescriptions = packetDescriptionsPointer.pointee.mDataByteSize * numberPackets
+            
+            
+            
+            
+            
+            
+            
+        } // * 不能因为有inPacketDescriptions没有返回NULL而判定音频数据就是VBR编码的
+        
+        
+        
         /*
          STKAudioPlayer* player = (__bridge STKAudioPlayer*)clientData;
          
