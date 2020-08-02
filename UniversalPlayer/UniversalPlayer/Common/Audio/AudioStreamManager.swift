@@ -18,9 +18,11 @@ class AudioStreamManager: NSObject {
     var bitRate: UInt32 = 0
     var duration: TimeInterval = 0
     
-    var format: AudioStreamBasicDescription?
+    var format: AudioStreamBasicDescription!
+    var maxPacketSize: UInt32!
+    var audioDataByteCount: Int!
     
-    
+
     private var streamId: AudioFileStreamID?
     
     private var dataOffset = 0
@@ -29,6 +31,8 @@ class AudioStreamManager: NSObject {
     private var processedPacketsCount = 0
     private var processedPacketsSizeTotal = 0
     
+    private var readyToProducePackets = false
+    private var discontinuous = false
     
     
     init(fileType: AudioFileTypeID = 0, fileSize: Int, callback: (NSError?) -> Void) {
@@ -92,7 +96,7 @@ extension AudioStreamManager {
         let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
         let manager: AudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
-        manager.handlePropertyListener(streamId: streamId, propertyId: propertyId, ioFlags: ioFlags)
+        manager.handlePropertyListener(propertyId: propertyId, ioFlags: ioFlags)
         
     }
     
@@ -102,22 +106,106 @@ extension AudioStreamManager {
     ///   - streamId: 当前文件流Id
     ///   - propertyId: 当前解析的信息Id
     ///   - ioFlags: 返回参数
-    private func handlePropertyListener(streamId: AudioFileStreamID, propertyId: AudioFileStreamPropertyID, ioFlags: UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
+    private func handlePropertyListener(propertyId: AudioFileStreamPropertyID, ioFlags: UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
         
         switch propertyId {
         case kAudioFileStreamProperty_BitRate: // * 音频数据的码率
             break
             
         case kAudioFileStreamProperty_DataOffset: // * 音频数据在整个音频文件中的offset
+            var offsetSize = UInt32(MemoryLayout.size(ofValue: dataOffset))
+            
+            // * 获取dataOffset
+            AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_PacketSizeUpperBound, &offsetSize, &dataOffset)
+            audioDataByteCount = fileSize - dataOffset
+            calculateDuration()
+            
             break
             
         case kAudioFileStreamProperty_DataFormat: // * 音频文件结构信息(处理AAC / SBR等包含多个文件类型的音频格式)
+            var descriptionSize = UInt32(MemoryLayout.size(ofValue: format))
+            
+            // * 获取format
+            AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
+            calculatepPacketDuration()
+            
             break
             
         case kAudioFileStreamProperty_AudioDataByteCount: // * 音频数据的总量
             break
             
+        case kAudioFileStreamProperty_FormatList: // * AudioStreamBasicDescription
+            var outWriteable = DarwinBoolean.init(false)
+            var formatListSize: UInt32 = 0
+            guard AudioFileStreamGetPropertyInfo(streamId!, kAudioFileStreamProperty_FormatList, &formatListSize, &outWriteable) == noErr  else {
+                break
+                
+            }
+            
+            var formatList = UnsafeMutablePointer<AudioFormatListItem>.allocate(capacity: Int(formatListSize))
+            defer { // * 预释放formatList
+                free(formatList)
+                
+            }
+            guard AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_FormatList, &formatListSize, formatList) == noErr  else {
+                break
+                
+            }
+            
+            var supportedFormatsSize: UInt32 = 0
+            guard AudioFormatGetPropertyInfo(kAudioFormatProperty_DecodeFormatIDs, 0, nil, &supportedFormatsSize) == noErr  else {
+                
+                break
+                
+            }
+            
+            let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout.size(ofValue: OSType.self))
+            var supportedFormats = UnsafeMutablePointer<OSType>.allocate(capacity: Int(supportedFormatCount))
+            defer { // * 预释放supportedFormats
+                free(supportedFormats)
+                
+            }
+            guard AudioFormatGetPropertyInfo(kAudioFormatProperty_DecodeFormatIDs, 0, nil, supportedFormats) == noErr  else {
+
+                break
+                
+            }
+            
+            let num = Int(formatListSize) / MemoryLayout.size(ofValue: AudioFormatListItem.self)
+            
+            for index in 0 ..< num + 1 {
+                let format = formatList[index].mASBD
+                
+                for jndex in 0 ..< supportedFormatCount {
+                    
+                    if format.mFormatID == supportedFormats[Int(jndex)] {
+                        self.format = format
+                        calculatepPacketDuration()
+                        break;
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            
+            break
+            
         case kAudioFileStreamProperty_ReadyToProducePackets: // * 解析完成
+            readyToProducePackets = true
+            discontinuous = true
+            
+            var sizeOfUInt32 = UInt32(MemoryLayout.size(ofValue: maxPacketSize))
+            var status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_PacketSizeUpperBound, &sizeOfUInt32, &maxPacketSize)
+            
+            if status != noErr || maxPacketSize == 0 {
+                print("解析完成???")
+                status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_MaximumPacketSize, &sizeOfUInt32, &maxPacketSize)
+            }
+            
+            // TODO: 外部代理
+            
             break
             
         default: // * 其他忽略
@@ -158,6 +246,7 @@ extension AudioStreamManager {
                 doesNeedToFreeMemory = true
                 
                 let memorySize = MemoryLayout.size(ofValue: AudioStreamPacketDescription.self) * Int(numberPackets)
+                // * malloc
                 descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: memorySize)
                 
                 let packetSize = numberBytes / numberPackets
@@ -242,12 +331,12 @@ extension AudioStreamManager {
     }
     
     func calculatepPacketDuration() {
-        guard let beingFormat = format, beingFormat.mSampleRate > 0 else {
+        guard format.mSampleRate > 0 else {
             return
                 
         }
         
-        packetDuration = Double(beingFormat.mFramesPerPacket) / beingFormat.mSampleRate
+        packetDuration = Double(format.mFramesPerPacket) / format.mSampleRate
     }
 }
 
