@@ -35,7 +35,7 @@ class AudioStreamManager: NSObject {
     private var discontinuous = false
     
     
-    init(fileType: AudioFileTypeID = 0, fileSize: Int, callback: (NSError?) -> Void) {
+    init(fileType: AudioFileTypeID = 0, fileSize: Int, callback: (NSError?, AudioStreamManager?) -> Void) {
         self.fileType = fileType
         self.fileSize = fileSize
         
@@ -44,14 +44,8 @@ class AudioStreamManager: NSObject {
         openAudioFileStream(callback: callback)
     }
     
-    deinit {
-        if streamId != nil {
-            closeAudioFileStream()
-            
-        }
-    }
-    
-    func openAudioFileStream(callback: (NSError?) -> Void) {
+    /// 打开文件流
+    private func openAudioFileStream(callback: (NSError?, AudioStreamManager?) -> Void) {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
         let status: OSStatus = AudioFileStreamOpen(clientData, { (selfPointer, streamId, propertyId, flags) in
@@ -69,12 +63,12 @@ class AudioStreamManager: NSObject {
             
         }
         
-        callback(error)
+        callback(error, self)
         
         
     }
     
-    // TODO: 关闭文件流的实现
+    /// 关闭文件流
     func closeAudioFileStream() {
         if streamId != nil {
             AudioFileStreamClose(streamId!)
@@ -82,6 +76,24 @@ class AudioStreamManager: NSObject {
             
         }
 
+    }
+    
+    /// 分析Data
+    func parseData(data: Data) -> NSError? {
+        if readyToProducePackets && packetDuration == 0 {
+            return NSError.init(domain: NSOSStatusErrorDomain, code: -1, userInfo: nil)
+            
+        }
+        
+        let status = AudioFileStreamParseBytes(streamId!, UInt32(data.count), (data as NSData).bytes, discontinuous ? .discontinuity : .init(rawValue: 0))
+        
+        if status == noErr {
+            return nil
+            
+        }else {
+            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+            
+        }
     }
     
 
@@ -125,9 +137,21 @@ extension AudioStreamManager {
         case kAudioFileStreamProperty_DataFormat: // * 音频文件结构信息(处理AAC / SBR等包含多个文件类型的音频格式)
             var descriptionSize = UInt32(MemoryLayout.size(ofValue: format))
             
+//            let formatPointer = &self.format
+            
             // * 获取format
-            AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
-            calculatepPacketDuration()
+            let status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
+            
+            if status != noErr {
+                let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+                print(error)
+                
+            }else {
+                calculatepPacketDuration()
+                
+            }
+            
+            
             
             break
             

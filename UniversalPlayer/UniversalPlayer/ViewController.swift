@@ -14,16 +14,46 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // * 加载文件
+        let filePath = Bundle.main.path(forResource: "情 乱 夜 梦 東 京 - Nanvo", ofType: "mp3")!
+        let file = FileHandle.init(forReadingAtPath: filePath)!
+        defer {
+            file.closeFile()
+        }
+        var fileSize = try! FileManager.default.attributesOfItem(atPath: filePath)[.size] as! Int
         
-        let audioStreamManager = AudioStreamManager.init(fileSize: 1000) { (error) in
+        let audioStreamManager = AudioStreamManager.init(fileSize: fileSize) { (error, manager)  in
             if let _ = error {
                 print(error!)
+                print("初始化失败")
                 return
                 
             }
             
             print("初始化成功")
+            let lengthPerRead = 10000
             
+            while fileSize > 0 {
+                let data = file.readData(ofLength: lengthPerRead)
+                fileSize -= data.count
+                
+                let error = manager!.parseData(data: data)
+                
+                if let beingError = error {
+                    
+                    if beingError.code == kAudioFileStreamError_NotOptimized {
+                        print("audio not optimized.")
+                        
+                    }
+                    
+                    break
+                }
+                
+                
+            }
+            
+            print("audio format: bitrate = \(manager!.bitRate), duration = \(manager!.duration).")
+            manager!.closeAudioFileStream()
             
         }
         
