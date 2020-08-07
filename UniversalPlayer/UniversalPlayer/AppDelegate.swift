@@ -15,8 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-//        AudioTool.shared.setupAudioSession()
-//        AudioTool.shared.bindAudioSessionNotification()
+        AudioTool.shared.setupAudioSession()
+        AudioTool.shared.bindAudioSessionNotification()
         
         
         return true

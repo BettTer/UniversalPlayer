@@ -11,31 +11,38 @@ import AVFoundation
 import StreamingKit
 import CoreAudio
 
+protocol AudioStreamDelegate: Protocol {
+    func finishParseProperty(manager: AudioStreamManager)
+    func audioDataParsed(manager: AudioStreamManager, datas: [AudioParsedData])
+    
+}
+
 class AudioStreamManager: NSObject {
-    let fileType: AudioFileTypeID!
-    let fileSize: Int!
+    let fileType: AudioFileTypeID
+    let fileSize: UInt64
     
     var bitRate: UInt32 = 0
     var duration: TimeInterval = 0
     
-    var format: AudioStreamBasicDescription!
-    var maxPacketSize: UInt32!
-    var audioDataByteCount: Int!
+    var format: AudioStreamBasicDescription = AudioStreamBasicDescription.init()
+    var maxPacketSize: UInt32 = 0
+    var audioDataByteCount: UInt64 = 0
     
+    weak var delegate: AudioStreamDelegate?
 
     private var streamId: AudioFileStreamID?
     
-    private var dataOffset = 0
+    private var dataOffset: Int64 = 0
     private var packetDuration: TimeInterval = 0
     
-    private var processedPacketsCount = 0
-    private var processedPacketsSizeTotal = 0
+    private var processedPacketsCount: UInt64 = 0
+    private var processedPacketsSizeTotal: UInt64 = 0
     
     private var readyToProducePackets = false
     private var discontinuous = false
     
     
-    init(fileType: AudioFileTypeID = 0, fileSize: Int, callback: (NSError?, AudioStreamManager?) -> Void) {
+    init(fileType: AudioFileTypeID = 0, fileSize: UInt64, callback: (NSError?, AudioStreamManager) -> Void) {
         self.fileType = fileType
         self.fileSize = fileSize
         
@@ -45,7 +52,7 @@ class AudioStreamManager: NSObject {
     }
     
     /// 打开文件流
-    private func openAudioFileStream(callback: (NSError?, AudioStreamManager?) -> Void) {
+    private func openAudioFileStream(callback: (NSError?, AudioStreamManager) -> Void) {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
         let status: OSStatus = AudioFileStreamOpen(clientData, { (selfPointer, streamId, propertyId, flags) in
@@ -55,16 +62,11 @@ class AudioStreamManager: NSObject {
             AudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions)
 
         }, fileType, &streamId)
-                
-        var error: NSError? = nil
         
-        if status != noErr {
-            error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+        decideStatus(status) { (error) in
+            callback(error, self)
             
         }
-        
-        callback(error, self)
-        
         
     }
     
@@ -125,34 +127,36 @@ extension AudioStreamManager {
             break
             
         case kAudioFileStreamProperty_DataOffset: // * 音频数据在整个音频文件中的offset
-            var offsetSize = UInt32(MemoryLayout.size(ofValue: dataOffset))
+            var offsetSize: UInt32 = UInt32(MemoryLayout.size(ofValue: dataOffset))
             
             // * 获取dataOffset
-            AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_PacketSizeUpperBound, &offsetSize, &dataOffset)
-            audioDataByteCount = fileSize - dataOffset
+            let _ = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_PacketSizeUpperBound, &offsetSize, &dataOffset)
+            
+            audioDataByteCount = UInt64(Int64(fileSize) - dataOffset)
             calculateDuration()
             
             break
             
         case kAudioFileStreamProperty_DataFormat: // * 音频文件结构信息(处理AAC / SBR等包含多个文件类型的音频格式)
-            var descriptionSize = UInt32(MemoryLayout.size(ofValue: format))
-            
-//            let formatPointer = &self.format
+            var descriptionSize: UInt32 = UInt32(MemoryLayout.size(ofValue: format))
             
             // * 获取format
             let status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
             
-            if status != noErr {
-                let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
-                print(error)
+            decideStatus(status) { error in
                 
-            }else {
-                calculatepPacketDuration()
+                if let error = error {
+                    print(error)
+                    
+                }else {
+                    calculatepPacketDuration()
+                    
+                }
                 
             }
             
-            
-            
+
+
             break
             
         case kAudioFileStreamProperty_AudioDataByteCount: // * 音频数据的总量
@@ -224,11 +228,13 @@ extension AudioStreamManager {
             var status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_PacketSizeUpperBound, &sizeOfUInt32, &maxPacketSize)
             
             if status != noErr || maxPacketSize == 0 {
-                print("解析完成???")
+                print("解析完成")
                 status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_MaximumPacketSize, &sizeOfUInt32, &maxPacketSize)
+                
             }
             
-            // TODO: 外部代理
+            // * 外部代理
+            delegate?.finishParseProperty(manager: self)
             
             break
             
@@ -249,85 +255,88 @@ extension AudioStreamManager {
         let unsafeRawPointer = UnsafeRawPointer.init(clientData)
         let manager: AudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
-        manager.handlePacketsProc(numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptionsPointer)
+        manager.handlePacketsProc(packets: inputData, numberBytes: numberBytes, numberPackets: numberPackets, packetDescriptionsPointer: packetDescriptionsPointer)
         
     }
     
-    
     /// 分离帧监听
     /// - Parameters:
+    ///   - packets: 本次处理的所有数据
     ///   - numberBytes: 本次处理的数据大小
     ///   - numberPackets: 本次总共处理了多少帧
-    ///   - inputData: 本次处理的所有数据
     ///   - packetDescriptionsPointer: AudioStreamPacketDescription数组(存储了每一帧数据是从第几个字节开始的，这一帧总共多少字节)
-    private func handlePacketsProc(numberBytes: UInt32, numberPackets:  UInt32, inputData: UnsafeRawPointer, packetDescriptionsPointer: UnsafeMutablePointer<AudioStreamPacketDescription>)  {
-            /// 是否需要需要手动释放内存
-            var doesNeedToFreeMemory = false
-            var descriptionsPointer = packetDescriptionsPointer
+    private func handlePacketsProc(packets: UnsafeRawPointer, numberBytes: UInt32, numberPackets: UInt32, packetDescriptionsPointer: UnsafeMutablePointer<AudioStreamPacketDescription>)  {
+        /// 是否需要需要手动释放内存
+        var doesNeedToFreeMemory = false
+        var descriptionsPointer = packetDescriptionsPointer
+        
+        // * 为空 按照CBR处理 平均每一帧的数据后生成packetDescriptioins
+        if descriptionsPointer == UnsafeMutablePointer<AudioStreamPacketDescription>(nil) {
+            doesNeedToFreeMemory = true
             
-            // * 为空 按照CBR处理 平均每一帧的数据后生成packetDescriptioins
-            if descriptionsPointer == UnsafeMutablePointer<AudioStreamPacketDescription>(nil) {
-                doesNeedToFreeMemory = true
-                
-                let memorySize = MemoryLayout.size(ofValue: AudioStreamPacketDescription.self) * Int(numberPackets)
-                // * malloc
-                descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: memorySize)
-                
-                let packetSize = numberBytes / numberPackets
-                
-                
-                for index in 0 ..< Int(numberPackets) {
-                    /// 计算帧偏移量
-                    let packetOffset = packetSize * UInt32(index)
-                    
-                    descriptionsPointer[index].mStartOffset = Int64(packetOffset)
-                    descriptionsPointer[index].mVariableFramesInPacket = 0
-                    
-                    if index == numberPackets - 1 { // * 最后一帧
-                        descriptionsPointer[index].mDataByteSize = numberBytes - packetOffset
-                        
-                    }else {
-                        descriptionsPointer[index].mDataByteSize = packetSize
-                        
-                    }
-                    
-                }
-                
-                
-            } // * 不能因为有inPacketDescriptions没有返回NULL而判定音频数据就是VBR编码的
+            let memorySize = MemoryLayout.size(ofValue: AudioStreamPacketDescription.self) * Int(numberPackets)
+            // * malloc
+            descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: memorySize)
             
+            let packetSize = numberBytes / numberPackets
             
-            var array: [AudioParsedData] = []
             
             for index in 0 ..< Int(numberPackets) {
-                /// 获取帧偏移量
-                let packetOffset = descriptionsPointer[index].mStartOffset
+                /// 计算帧偏移量
+                let packetOffset = packetSize * UInt32(index)
                 
-                if let parsedData = AudioParsedData.init(bytes: UnsafeRawPointer.init(bitPattern: Int(numberPackets) + Int(packetOffset)), description: descriptionsPointer[index]) {
+                descriptionsPointer[index].mStartOffset = Int64(packetOffset)
+                descriptionsPointer[index].mVariableFramesInPacket = 0
+                
+                if index == numberPackets - 1 { // * 最后一帧
+                    descriptionsPointer[index].mDataByteSize = numberBytes - packetOffset
                     
-                    array.append(parsedData)
-                    
-                    if processedPacketsCount < Self.BitRateEstimationMaxPackets {
-                        processedPacketsSizeTotal += Int(parsedData.packetDescription.mDataByteSize)
-                        processedPacketsCount += 1
-                        
-                        calculateBitRate()
-                        calculateDuration()
-                        
-                    }
+                }else {
+                    descriptionsPointer[index].mDataByteSize = packetSize
                     
                 }
                 
+            }
+            
+            
+        } // * 不能因为有inPacketDescriptions没有返回NULL而判定音频数据就是VBR编码的
+        
+        
+        var array: [AudioParsedData] = []
+        
+        for index in 0 ..< Int(numberPackets) {
+            /// 获取帧偏移量
+            let packetOffset = descriptionsPointer[index].mStartOffset
+            
+            let pointer = packets.advanced(by: Int(packetOffset))
+            
+            if let parsedData = AudioParsedData.init(bytes: pointer, description: descriptionsPointer[index]) {
+                
+                array.append(parsedData)
+                
+                if processedPacketsCount < Self.BitRateEstimationMaxPackets {
+                    processedPacketsSizeTotal += UInt64(parsedData.packetDescription.mDataByteSize)
+                    processedPacketsCount += 1
+                    
+                    calculateBitRate()
+                    calculateDuration()
+                    
+                }
                 
             }
             
-        
-            // TODO: 外部代理
             
-            if doesNeedToFreeMemory {
-                free(descriptionsPointer)
-
-            }
+        }
+        
+        
+        // * 外部代理
+        delegate?.audioDataParsed(manager: self, datas: array)
+        
+        
+        if doesNeedToFreeMemory {
+            free(descriptionsPointer)
+            
+        }
         
     }
 }
@@ -348,7 +357,7 @@ extension AudioStreamManager {
     
     func calculateDuration() {
         if fileSize > 0 && bitRate > 0 {
-            duration = Double(fileSize - dataOffset) * 8.0 / Double(bitRate)
+            duration = Double(fileSize - UInt64(dataOffset)) * 8.0 / Double(bitRate)
             
         }
         
@@ -362,6 +371,22 @@ extension AudioStreamManager {
         
         packetDuration = Double(format.mFramesPerPacket) / format.mSampleRate
     }
+}
+
+// MARK: - 错误处理
+extension AudioStreamManager {
+    func decideStatus(_ status: OSStatus, callback: (NSError?) -> Void) {
+        if status != noErr {
+            let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+            callback(error)
+            
+        }else {
+            callback(nil)
+            
+        }
+        
+    }
+    
 }
 
 // MARK: - 伪宏
