@@ -414,6 +414,8 @@ extension AudioStreamManager {
             
             return outDataByteOffset + dataOffset
             
+            
+            
         }else {
             discontinuous = true
             return dataOffset + Int64(time / duration) * Int64(audioDataByteCount)
