@@ -18,6 +18,7 @@
 		9C50034824D0082C00D0BD0B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034724D0082C00D0BD0B /* Assets.xcassets */; };
 		9C50034B24D0082C00D0BD0B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034924D0082C00D0BD0B /* LaunchScreen.storyboard */; };
 		9C50035424D0098700D0BD0B /* AudioTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C50035324D0098700D0BD0B /* AudioTool.swift */; };
+		9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD9048724E138B2007022B8 /* YYAudioFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		9C50034A24D0082C00D0BD0B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9C50034C24D0082C00D0BD0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9C50035324D0098700D0BD0B /* AudioTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTool.swift; sourceTree = "<group>"; };
+		9CD9048724E138B2007022B8 /* YYAudioFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioFile.swift; sourceTree = "<group>"; };
 		A08D2D2B555611CC65DD77ED /* Pods-UniversalPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.debug.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		A84DDD5F278B0BEDF9DF0105 /* Pods-UniversalPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.release.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,6 +85,7 @@
 			children = (
 				9C50035324D0098700D0BD0B /* AudioTool.swift */,
 				9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */,
+				9CD9048724E138B2007022B8 /* YYAudioFile.swift */,
 				9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */,
 			);
 			path = Audio;
@@ -251,6 +254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */,
 				9C2DA31F24D1108500E776CF /* AudioStreamManager.swift in Sources */,
 				9C50034324D0082B00D0BD0B /* ViewController.swift in Sources */,
 				9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */,

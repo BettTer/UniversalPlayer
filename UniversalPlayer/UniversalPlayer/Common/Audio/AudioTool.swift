@@ -80,3 +80,17 @@ extension AudioTool {
     
 }
 
+extension AudioTool {
+    func decideStatus(_ status: OSStatus) -> NSError? {
+        if status != noErr {
+            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+            
+        }else {
+            return nil
+            
+        }
+        
+    }
+
+}
+

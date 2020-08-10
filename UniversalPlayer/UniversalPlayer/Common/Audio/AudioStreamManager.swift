@@ -8,8 +8,7 @@
 
 import UIKit
 import AVFoundation
-import StreamingKit
-import CoreAudio
+//import CoreAudio
 
 protocol AudioStreamDelegate: Protocol {
     func finishParseProperty(manager: AudioStreamManager)
@@ -61,7 +60,7 @@ class AudioStreamManager: NSObject {
 
         }, fileType, &streamId)
         
-        if let error = decideStatus(status) {
+        if let error = AudioTool.shared.decideStatus(status) {
             return error
             
         }else {
@@ -126,7 +125,7 @@ extension AudioStreamManager {
             let status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
             
             
-            if let error = decideStatus(status) {
+            if let error = AudioTool.shared.decideStatus(status) {
                 print(error)
                 
             }else {
@@ -358,7 +357,7 @@ extension AudioStreamManager {
         var writable: DarwinBoolean = false
 
         let status1 = AudioFileStreamGetPropertyInfo(streamId!, kAudioFileStreamProperty_MagicCookieData, &cookieSize, &writable)
-        if let error = decideStatus(status1) {
+        if let error = AudioTool.shared.decideStatus(status1) {
             print(error)
             return nil
             
@@ -370,7 +369,7 @@ extension AudioStreamManager {
         }
         
         let status2 = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_MagicCookieData, &cookieSize, cookieData)
-        if let error = decideStatus(status2) {
+        if let error = AudioTool.shared.decideStatus(status2) {
             print(error)
             return nil
             
@@ -409,7 +408,7 @@ extension AudioStreamManager {
         
         #warning("疑问?")
         // * if (status == noErr && !(ioFlags & kAudioFileStreamSeekFlag_OffsetIsEstimated))
-        if decideStatus(status) == nil && ioFlags == AudioFileStreamSeekFlags.offsetIsEstimated {
+        if AudioTool.shared.decideStatus(status) == nil && ioFlags == AudioFileStreamSeekFlags.offsetIsEstimated {
             // *time -= ((approximateSeekOffset - _dataOffset) - outDataByteOffset) * 8.0 / _bitRate;
             
             return outDataByteOffset + dataOffset
@@ -426,18 +425,7 @@ extension AudioStreamManager {
 }
 
 // MARK: - 错误处理
-extension AudioStreamManager {
-    func decideStatus(_ status: OSStatus) -> NSError? {
-        if status != noErr {
-            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
-            
-        }else {
-            return nil
-            
-        }
-        
-    }
-    
+extension AudioStreamManager {    
 //    func decideStatus(_ status: OSStatus, callback: (NSError?) -> Void) {
 //        if status != noErr {
 //            let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
