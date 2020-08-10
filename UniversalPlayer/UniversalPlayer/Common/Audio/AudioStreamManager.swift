@@ -42,17 +42,15 @@ class AudioStreamManager: NSObject {
     private var discontinuous = false
     
     
-    init(fileType: AudioFileTypeID = 0, fileSize: UInt64, callback: (NSError?, AudioStreamManager) -> Void) {
+    init(fileType: AudioFileTypeID = 0, fileSize: UInt64) {
         self.fileType = fileType
         self.fileSize = fileSize
         
         super.init()
-        
-        openAudioFileStream(callback: callback)
     }
     
     /// 打开文件流
-    private func openAudioFileStream(callback: (NSError?, AudioStreamManager) -> Void) {
+    func openAudioFileStream() -> NSError? {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
         let status: OSStatus = AudioFileStreamOpen(clientData, { (selfPointer, streamId, propertyId, flags) in
@@ -63,10 +61,14 @@ class AudioStreamManager: NSObject {
 
         }, fileType, &streamId)
         
-        decideStatus(status) { (error) in
-            callback(error, self)
+        if let error = decideStatus(status) {
+            return error
+            
+        }else {
+            return nil
             
         }
+        
         
     }
     
@@ -79,26 +81,6 @@ class AudioStreamManager: NSObject {
         }
 
     }
-    
-    /// 分析Data
-    func parseData(data: Data) -> NSError? {
-        if readyToProducePackets && packetDuration == 0 {
-            return NSError.init(domain: NSOSStatusErrorDomain, code: -1, userInfo: nil)
-            
-        }
-        
-        let status = AudioFileStreamParseBytes(streamId!, UInt32(data.count), (data as NSData).bytes, discontinuous ? .discontinuity : .init(rawValue: 0))
-        
-        if status == noErr {
-            return nil
-            
-        }else {
-            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
-            
-        }
-    }
-    
-
 }
 
 
@@ -143,20 +125,15 @@ extension AudioStreamManager {
             // * 获取format
             let status = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_DataFormat, &descriptionSize, &format)
             
-            decideStatus(status) { error in
+            
+            if let error = decideStatus(status) {
+                print(error)
                 
-                if let error = error {
-                    print(error)
-                    
-                }else {
-                    calculatepPacketDuration()
-                    
-                }
+            }else {
+                calculatepPacketDuration()
                 
             }
             
-
-
             break
             
         case kAudioFileStreamProperty_AudioDataByteCount: // * 音频数据的总量
@@ -341,7 +318,7 @@ extension AudioStreamManager {
     }
 }
 
-// MARK: - calculate
+// MARK: - Calculate
 extension AudioStreamManager {
     func calculateBitRate() {
         if packetDuration != 0
@@ -373,19 +350,103 @@ extension AudioStreamManager {
     }
 }
 
-// MARK: - 错误处理
+// MARK: - Actions
 extension AudioStreamManager {
-    func decideStatus(_ status: OSStatus, callback: (NSError?) -> Void) {
-        if status != noErr {
-            let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
-            callback(error)
+    /// 获取MagicCookie
+    func fetchMagicCookie() -> Data? {
+        var cookieSize: UInt32 = 0
+        var writable: DarwinBoolean = false
+
+        let status1 = AudioFileStreamGetPropertyInfo(streamId!, kAudioFileStreamProperty_MagicCookieData, &cookieSize, &writable)
+        if let error = decideStatus(status1) {
+            print(error)
+            return nil
+            
+        }
+        
+        let cookieData = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(cookieSize))
+        defer {
+            free(cookieData)
+        }
+        
+        let status2 = AudioFileStreamGetProperty(streamId!, kAudioFileStreamProperty_MagicCookieData, &cookieSize, cookieData)
+        if let error = decideStatus(status2) {
+            print(error)
+            return nil
+            
+        }
+        
+        let data = Data.init(bytes: cookieData, count: Int(cookieSize))
+        return data
+    }
+    
+    /// 分析Data
+    func parseData(data: Data) -> NSError? {
+        if readyToProducePackets && packetDuration == 0 {
+            return NSError.init(domain: NSOSStatusErrorDomain, code: -1, userInfo: nil)
+            
+        }
+        
+        let status = AudioFileStreamParseBytes(streamId!, UInt32(data.count), (data as NSData).bytes, discontinuous ? .discontinuity : .init(rawValue: 0))
+        
+        if status == noErr {
+            return nil
             
         }else {
-            callback(nil)
+            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+            
+        }
+    }
+    
+    /// 拖动时间
+    func seekTo(time: TimeInterval) -> Int64 {
+        
+        let seekToPacket = floor(time / packetDuration)
+        var ioFlags = AudioFileStreamSeekFlags.init()
+        var outDataByteOffset: Int64 = 0
+        
+        let status = AudioFileStreamSeek(streamId!, Int64(seekToPacket), &outDataByteOffset, &ioFlags)
+        
+        #warning("疑问?")
+        // * if (status == noErr && !(ioFlags & kAudioFileStreamSeekFlag_OffsetIsEstimated))
+        if decideStatus(status) == nil && ioFlags == AudioFileStreamSeekFlags.offsetIsEstimated {
+            // *time -= ((approximateSeekOffset - _dataOffset) - outDataByteOffset) * 8.0 / _bitRate;
+            
+            return outDataByteOffset + dataOffset
+            
+        }else {
+            discontinuous = true
+            return dataOffset + Int64(time / duration) * Int64(audioDataByteCount)
             
         }
         
     }
+}
+
+// MARK: - 错误处理
+extension AudioStreamManager {
+    func decideStatus(_ status: OSStatus) -> NSError? {
+        if status != noErr {
+            return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+            
+        }else {
+            return nil
+            
+        }
+        
+    }
+    
+//    func decideStatus(_ status: OSStatus, callback: (NSError?) -> Void) {
+//        if status != noErr {
+//            let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+//            callback(error)
+//
+//        }else {
+//            callback(nil)
+//
+//        }
+//
+//    }
     
 }
 
