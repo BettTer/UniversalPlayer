@@ -89,6 +89,61 @@ extension YYAudioFile {
     }
     
     func fetchFormatInfo() {
+        var formatListSize: UInt32 = 0
+        
+        let infoStatus = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyFormatList, &formatListSize, nil)
+        
+        if AudioTool.shared.decideStatus(infoStatus) == nil {
+            var found = false
+            
+            var formatList = UnsafeMutablePointer<AudioFormatListItem>.allocate(capacity: Int(formatListSize))
+            defer {
+                free(formatList)
+                
+            }
+            
+            let propertyStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyFormatList, &formatListSize, &formatList)
+            
+            if AudioTool.shared.decideStatus(propertyStatus) == nil {
+                var supportedFormatsSize: UInt32 = 0
+                
+                let infoStatus_DecodeFormatIDs = AudioFormatGetPropertyInfo(kAudioFormatProperty_DecodeFormatIDs, 0, nil, &supportedFormatsSize)
+                
+                if let error = AudioTool.shared.decideStatus(infoStatus_DecodeFormatIDs) { // * 如果出错就直接关闭
+
+                    return
+                    
+                }else {
+                    /*
+                     UInt32 supportedFormatCount = supportedFormatsSize / sizeof(OSType);
+                     OSType *supportedFormats = (OSType *)malloc(supportedFormatsSize);
+                     status = AudioFormatGetProperty(kAudioFormatProperty_DecodeFormatIDs, 0, NULL, &supportedFormatsSize, supportedFormats);
+                     */
+                    let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout.size(ofValue: OSType.self))
+                    let supportedFormats = UnsafeMutablePointer<OSType>.allocate(capacity: Int(supportedFormatsSize))
+                    defer {
+                        free(supportedFormats)
+                    }
+                    
+                    let propertyStatus_DecodeFormatIDs = AudioFormatGetProperty(kAudioFormatProperty_DecodeFormatIDs, 0, nil, &supportedFormatsSize, supportedFormats)
+                    
+                    if let error = AudioTool.shared.decideStatus(propertyStatus_DecodeFormatIDs) {
+                        // * 如果出错就直接关闭
+                        print(error)
+                        print("关闭")
+                        closeAudioFile()
+                        
+                    }
+                    
+                    
+                }
+                
+                
+            }
+            
+            
+        }
+        
         
         
     }
@@ -121,8 +176,6 @@ extension YYAudioFile {
         
         
     }
-    
-    
     
     static func getSizeProcListener(inClientData: UnsafeMutableRawPointer) -> Int64 {
         let unsafeRawPointer = UnsafeRawPointer.init(inClientData)

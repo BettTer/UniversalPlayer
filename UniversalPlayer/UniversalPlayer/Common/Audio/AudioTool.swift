@@ -81,6 +81,11 @@ extension AudioTool {
 }
 
 extension AudioTool {
+    /*
+     // * malloc
+     descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: memorySize)
+     */
+    
     func decideStatus(_ status: OSStatus) -> NSError? {
         if status != noErr {
             return NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
