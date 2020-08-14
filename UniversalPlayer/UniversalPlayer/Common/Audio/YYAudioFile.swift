@@ -13,11 +13,18 @@ class YYAudioFile: NSObject {
     let filePath: String
     let fileType: AudioFileTypeID
     
-    private var fileHandler: FileHandle?
-    
+    private (set) var format: AudioStreamBasicDescription?
     private (set) var fileSize: Int64 = 0
-    private (set) var audioFileId: AudioFileID?
+    private (set) var duration: TimeInterval = 0
+    private (set) var bitRate: UInt32 = 0
+    private (set) var maxPacketSize: UInt32 = 0
+    private (set) var audioDataByteCount: UInt64 = 0
     
+    private var packetOffset = 0
+    private var fileHandler: FileHandle?
+    private var dataOffset = 0
+    private var packetDuration: TimeInterval = 0
+    private var audioFileId: AudioFileID?
     
     init(filePath: String, fileType: AudioFileTypeID = 0) {
         self.filePath = filePath
@@ -94,7 +101,7 @@ extension YYAudioFile {
         let infoStatus = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyFormatList, &formatListSize, nil)
         
         if AudioTool.shared.decideStatus(infoStatus) == nil {
-            var found = false
+            var doesFoundFormat = false
             
             var formatList = UnsafeMutablePointer<AudioFormatListItem>.allocate(capacity: Int(formatListSize))
             defer {
@@ -110,7 +117,9 @@ extension YYAudioFile {
                 let infoStatus_DecodeFormatIDs = AudioFormatGetPropertyInfo(kAudioFormatProperty_DecodeFormatIDs, 0, nil, &supportedFormatsSize)
                 
                 if let error = AudioTool.shared.decideStatus(infoStatus_DecodeFormatIDs) { // * 如果出错就直接关闭
-
+                    print(error)
+                    print("关闭")
+                    closeAudioFile()
                     return
                     
                 }else {
@@ -132,8 +141,37 @@ extension YYAudioFile {
                         print(error)
                         print("关闭")
                         closeAudioFile()
+                        return
                         
                     }
+                    
+                    let endIndex = Int(formatListSize) / MemoryLayout.size(ofValue: AudioFormatListItem.self)
+                    
+                    for index in 0 ..< endIndex + 1 {
+                        let currentFormat = formatList[index].mASBD
+                        
+                        for jndex in 0 ..< supportedFormatCount {
+                            
+                            if currentFormat.mFormatID == supportedFormats[Int(jndex)] {
+                                format = currentFormat
+                                doesFoundFormat = true
+                                break
+                            }
+                            
+                            
+                        }
+                        
+                    }
+                    
+                    
+                }
+                
+                if doesFoundFormat {
+//                    [self _calculatepPacketDuration];
+                    
+                }else {
+                    closeAudioFile()
+                    return
                     
                     
                 }
@@ -141,6 +179,18 @@ extension YYAudioFile {
                 
             }
             
+            
+        }
+        
+        var size: UInt32 = UInt32(MemoryLayout.size(ofValue: bitRate))
+        let bitRateStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyBitRate, &size, &bitRate)
+        
+        if let error = AudioTool.shared.decideStatus(bitRateStatus) {
+            // * 如果出错就直接关闭
+            print(error)
+            print("关闭")
+            closeAudioFile()
+            return
             
         }
         
