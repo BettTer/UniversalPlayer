@@ -123,11 +123,7 @@ extension YYAudioFile {
                     return
                     
                 }else {
-                    /*
-                     UInt32 supportedFormatCount = supportedFormatsSize / sizeof(OSType);
-                     OSType *supportedFormats = (OSType *)malloc(supportedFormatsSize);
-                     status = AudioFormatGetProperty(kAudioFormatProperty_DecodeFormatIDs, 0, NULL, &supportedFormatsSize, supportedFormats);
-                     */
+                    
                     let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout.size(ofValue: OSType.self))
                     let supportedFormats = UnsafeMutablePointer<OSType>.allocate(capacity: Int(supportedFormatsSize))
                     defer {
@@ -186,6 +182,17 @@ extension YYAudioFile {
         let bitRateStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyBitRate, &size, &bitRate)
         
         if let error = AudioTool.shared.decideStatus(bitRateStatus) {
+            // * 如果出错就直接关闭
+            print(error)
+            print("关闭")
+            closeAudioFile()
+            return
+            
+        }
+        
+        size = UInt32(MemoryLayout.size(ofValue: dataOffset))
+        let dataOffsetStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyDataOffset, &size, &dataOffset)
+        if let error = AudioTool.shared.decideStatus(dataOffsetStatus) {
             // * 如果出错就直接关闭
             print(error)
             print("关闭")

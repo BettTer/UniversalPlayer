@@ -12,6 +12,7 @@
 		9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583A24EA28D000E970EF /* PopViewController.swift */; };
 		9C12583E24EA28D000E970EF /* PopController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583B24EA28D000E970EF /* PopController.swift */; };
 		9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583C24EA28D000E970EF /* MenuViewController.swift */; };
+		9C12584124EA693500E970EF /* Delegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12584024EA693500E970EF /* Delegates.swift */; };
 		9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */; };
 		9C2DA31F24D1108500E776CF /* AudioStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */; };
 		9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */; };
@@ -24,7 +25,7 @@
 		9CC9DD9824EA279200E72FC3 /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */; };
 		9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9624EA279200E72FC3 /* ToolClass.swift */; };
 		9CC9DD9A24EA279200E72FC3 /* EnumSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9724EA279200E72FC3 /* EnumSet.swift */; };
-		9CC9DD9C24EA27AD00E72FC3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */; };
+		9CC9DD9C24EA27AD00E72FC3 /* RunloopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9B24EA27AD00E72FC3 /* RunloopViewController.swift */; };
 		9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD9048724E138B2007022B8 /* YYAudioFile.swift */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +35,7 @@
 		9C12583A24EA28D000E970EF /* PopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopViewController.swift; sourceTree = "<group>"; };
 		9C12583B24EA28D000E970EF /* PopController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopController.swift; sourceTree = "<group>"; };
 		9C12583C24EA28D000E970EF /* MenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		9C12584024EA693500E970EF /* Delegates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Delegates.swift; sourceTree = "<group>"; };
 		9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericFuncs.swift; sourceTree = "<group>"; };
 		9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamManager.swift; sourceTree = "<group>"; };
 		9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioParsedData.swift; sourceTree = "<group>"; };
@@ -48,7 +50,7 @@
 		9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseExtensions.swift; sourceTree = "<group>"; };
 		9CC9DD9624EA279200E72FC3 /* ToolClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToolClass.swift; sourceTree = "<group>"; };
 		9CC9DD9724EA279200E72FC3 /* EnumSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumSet.swift; sourceTree = "<group>"; };
-		9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../../../Test_ResponseEvent/Test_ResponseEvent/ViewController.swift; sourceTree = "<group>"; };
+		9CC9DD9B24EA27AD00E72FC3 /* RunloopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RunloopViewController.swift; path = ../../../Test_ResponseEvent/Test_ResponseEvent/RunloopViewController.swift; sourceTree = "<group>"; };
 		9CD9048724E138B2007022B8 /* YYAudioFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioFile.swift; sourceTree = "<group>"; };
 		A08D2D2B555611CC65DD77ED /* Pods-UniversalPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.debug.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		A84DDD5F278B0BEDF9DF0105 /* Pods-UniversalPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.release.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.release.xcconfig"; sourceTree = "<group>"; };
@@ -103,7 +105,6 @@
 				9CC9DD9624EA279200E72FC3 /* ToolClass.swift */,
 				9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */,
 				9C12583924EA28D000E970EF /* Pop */,
-				9C2DA31D24D10FEB00E776CF /* Audio */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -145,7 +146,7 @@
 				9C50033E24D0082B00D0BD0B /* AppDelegate.swift */,
 				9C50034224D0082B00D0BD0B /* ViewController.swift */,
 				9C50034424D0082B00D0BD0B /* Main.storyboard */,
-				9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */,
+				9CC9DD9B24EA27AD00E72FC3 /* RunloopViewController.swift */,
 				49D59A4224D6DB0E009FC37E /* Supporting Files */,
 			);
 			path = UniversalPlayer;
@@ -154,6 +155,8 @@
 		9C50035224D0095000D0BD0B /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				9C2DA31D24D10FEB00E776CF /* Audio */,
+				9C12584024EA693500E970EF /* Delegates.swift */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -284,12 +287,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */,
+				9C12584124EA693500E970EF /* Delegates.swift in Sources */,
 				9C2DA31F24D1108500E776CF /* AudioStreamManager.swift in Sources */,
 				9CC9DD9824EA279200E72FC3 /* BaseExtensions.swift in Sources */,
 				9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */,
 				9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */,
 				9C12583E24EA28D000E970EF /* PopController.swift in Sources */,
-				9CC9DD9C24EA27AD00E72FC3 /* ViewController.swift in Sources */,
+				9CC9DD9C24EA27AD00E72FC3 /* RunloopViewController.swift in Sources */,
 				9C50034324D0082B00D0BD0B /* ViewController.swift in Sources */,
 				9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */,
 				9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */,

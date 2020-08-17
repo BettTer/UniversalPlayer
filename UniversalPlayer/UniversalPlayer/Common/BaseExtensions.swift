@@ -443,16 +443,6 @@ extension UITouch {
     
 }
 
-extension UIButton {
-    /// 设置Button为动态宽
-    public func setAutoFitWidth(x: CGFloat, y: CGFloat, height: CGFloat) -> CGFloat {
-        let w = self.titleLabel?.setAutoFitWidth(x: x, y: y, height: height)
-        self.frame = CGRect.init(x: x, y: y, width: w!, height: height)
-        return w!
-    }
-    
-}
-
 // MARK: - 视觉 ==============================
 extension CGRect {
     func adaptiveFrame(basicType: EnumSet.iPhoneType = .iPhonePlus) -> CGRect {
