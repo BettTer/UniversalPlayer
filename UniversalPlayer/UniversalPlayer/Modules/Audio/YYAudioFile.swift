@@ -163,7 +163,7 @@ extension YYAudioFile {
                 }
                 
                 if doesFoundFormat {
-//                    [self _calculatepPacketDuration];
+                    calculateDuration()
                     
                 }else {
                     closeAudioFile()
@@ -201,6 +201,30 @@ extension YYAudioFile {
             
         }
         
+        audioDataByteCount = UInt64(fileSize - Int64(dataOffset))
+        
+        size = UInt32(MemoryLayout.size(ofValue: duration))
+        var tmpStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyEstimatedDuration, &size, &duration)
+        
+        if let _ = AudioTool.shared.decideStatus(tmpStatus) {
+            calculateDuration()
+            
+        }
+        
+        size = UInt32(MemoryLayout.size(ofValue: maxPacketSize))
+        tmpStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyPacketSizeUpperBound, &size, &maxPacketSize)
+        
+        if AudioTool.shared.decideStatus(tmpStatus) != nil  || maxPacketSize == 0 {
+            tmpStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyMaximumPacketSize, &size, &maxPacketSize)
+            
+            if let error = AudioTool.shared.decideStatus(tmpStatus) {
+                // * 如果出错就直接关闭
+                print(error)
+                print("关闭")
+                closeAudioFile()
+                return
+            }
+        }
         
         
     }
@@ -262,6 +286,13 @@ extension YYAudioFile {
             
         }
         
+    }
+    
+    func calculateDuration() {
+        if (fileSize > 0 && bitRate > 0) {
+            
+            duration = Double((fileSize - Int64(dataOffset) * 8) / Int64(bitRate))
+        }
     }
     
 }
