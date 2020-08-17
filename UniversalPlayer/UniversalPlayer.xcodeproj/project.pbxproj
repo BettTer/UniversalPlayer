@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		0B4116A365D63979234DD384 /* Pods_UniversalPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */; };
 		49D59A4424D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49D59A4324D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */; };
+		9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583A24EA28D000E970EF /* PopViewController.swift */; };
+		9C12583E24EA28D000E970EF /* PopController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583B24EA28D000E970EF /* PopController.swift */; };
+		9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583C24EA28D000E970EF /* MenuViewController.swift */; };
 		9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */; };
 		9C2DA31F24D1108500E776CF /* AudioStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */; };
 		9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */; };
@@ -18,12 +21,19 @@
 		9C50034824D0082C00D0BD0B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034724D0082C00D0BD0B /* Assets.xcassets */; };
 		9C50034B24D0082C00D0BD0B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034924D0082C00D0BD0B /* LaunchScreen.storyboard */; };
 		9C50035424D0098700D0BD0B /* AudioTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C50035324D0098700D0BD0B /* AudioTool.swift */; };
+		9CC9DD9824EA279200E72FC3 /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */; };
+		9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9624EA279200E72FC3 /* ToolClass.swift */; };
+		9CC9DD9A24EA279200E72FC3 /* EnumSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9724EA279200E72FC3 /* EnumSet.swift */; };
+		9CC9DD9C24EA27AD00E72FC3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */; };
 		9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD9048724E138B2007022B8 /* YYAudioFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		49D59A4324D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "情 乱 夜 梦 東 京 - Nanvo.mp3"; sourceTree = "<group>"; };
 		580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UniversalPlayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C12583A24EA28D000E970EF /* PopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopViewController.swift; sourceTree = "<group>"; };
+		9C12583B24EA28D000E970EF /* PopController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopController.swift; sourceTree = "<group>"; };
+		9C12583C24EA28D000E970EF /* MenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericFuncs.swift; sourceTree = "<group>"; };
 		9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamManager.swift; sourceTree = "<group>"; };
 		9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioParsedData.swift; sourceTree = "<group>"; };
@@ -35,6 +45,10 @@
 		9C50034A24D0082C00D0BD0B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9C50034C24D0082C00D0BD0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9C50035324D0098700D0BD0B /* AudioTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTool.swift; sourceTree = "<group>"; };
+		9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseExtensions.swift; sourceTree = "<group>"; };
+		9CC9DD9624EA279200E72FC3 /* ToolClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToolClass.swift; sourceTree = "<group>"; };
+		9CC9DD9724EA279200E72FC3 /* EnumSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumSet.swift; sourceTree = "<group>"; };
+		9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../../../Test_ResponseEvent/Test_ResponseEvent/ViewController.swift; sourceTree = "<group>"; };
 		9CD9048724E138B2007022B8 /* YYAudioFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioFile.swift; sourceTree = "<group>"; };
 		A08D2D2B555611CC65DD77ED /* Pods-UniversalPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.debug.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		A84DDD5F278B0BEDF9DF0105 /* Pods-UniversalPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.release.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.release.xcconfig"; sourceTree = "<group>"; };
@@ -71,10 +85,24 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		9C12583924EA28D000E970EF /* Pop */ = {
+			isa = PBXGroup;
+			children = (
+				9C12583A24EA28D000E970EF /* PopViewController.swift */,
+				9C12583B24EA28D000E970EF /* PopController.swift */,
+				9C12583C24EA28D000E970EF /* MenuViewController.swift */,
+			);
+			path = Pop;
+			sourceTree = "<group>";
+		};
 		9C2DA31C24D10FB000E776CF /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */,
+				9CC9DD9724EA279200E72FC3 /* EnumSet.swift */,
+				9CC9DD9624EA279200E72FC3 /* ToolClass.swift */,
 				9C2DA31A24D10A7900E776CF /* GenericFuncs.swift */,
+				9C12583924EA28D000E970EF /* Pop */,
 				9C2DA31D24D10FEB00E776CF /* Audio */,
 			);
 			path = Common;
@@ -117,6 +145,7 @@
 				9C50033E24D0082B00D0BD0B /* AppDelegate.swift */,
 				9C50034224D0082B00D0BD0B /* ViewController.swift */,
 				9C50034424D0082B00D0BD0B /* Main.storyboard */,
+				9CC9DD9B24EA27AD00E72FC3 /* ViewController.swift */,
 				49D59A4224D6DB0E009FC37E /* Supporting Files */,
 			);
 			path = UniversalPlayer;
@@ -256,11 +285,18 @@
 			files = (
 				9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */,
 				9C2DA31F24D1108500E776CF /* AudioStreamManager.swift in Sources */,
+				9CC9DD9824EA279200E72FC3 /* BaseExtensions.swift in Sources */,
+				9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */,
+				9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */,
+				9C12583E24EA28D000E970EF /* PopController.swift in Sources */,
+				9CC9DD9C24EA27AD00E72FC3 /* ViewController.swift in Sources */,
 				9C50034324D0082B00D0BD0B /* ViewController.swift in Sources */,
 				9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */,
 				9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */,
+				9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */,
 				9C50033F24D0082B00D0BD0B /* AppDelegate.swift in Sources */,
 				9C50035424D0098700D0BD0B /* AudioTool.swift in Sources */,
+				9CC9DD9A24EA279200E72FC3 /* EnumSet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
