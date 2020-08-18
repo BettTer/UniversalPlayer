@@ -424,22 +424,6 @@ extension AudioStreamManager {
     }
 }
 
-// MARK: - 错误处理
-extension AudioStreamManager {    
-//    func decideStatus(_ status: OSStatus, callback: (NSError?) -> Void) {
-//        if status != noErr {
-//            let error = NSError.init(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
-//            callback(error)
-//
-//        }else {
-//            callback(nil)
-//
-//        }
-//
-//    }
-    
-}
-
 // MARK: - 伪宏
 extension AudioStreamManager {
     static let BitRateEstimationMaxPackets = 5000

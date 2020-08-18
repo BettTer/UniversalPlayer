@@ -61,10 +61,13 @@ class YYAudioFile: NSObject {
     }
     
     deinit {
-        fileHandler?.closeFile()
+        if let _ = fileHandler {
+            fileHandler!.closeFile()
+            
+        }
+        
         closeAudioFile()
     }
-    
     
 }
 
@@ -163,7 +166,7 @@ extension YYAudioFile {
                 }
                 
                 if doesFoundFormat {
-                    calculateDuration()
+                    calculatepPacketDuration()
                     
                 }else {
                     closeAudioFile()
@@ -229,6 +232,100 @@ extension YYAudioFile {
         
     }
     
+    func fetchMagicCookie() -> Data? {
+        
+        var cookieSize: UInt32 = 0
+        var status = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyMagicCookieData, &cookieSize, nil)
+        if let error = AudioTool.shared.decideStatus(status) {
+            print(error)
+            return nil
+            
+        }
+
+        let cookieDataPointer = UnsafeMutablePointer<Data>.allocate(capacity: Int(cookieSize))
+        defer {
+            free(cookieDataPointer)
+        }
+        
+        status = AudioFileGetProperty(audioFileId!, kAudioFilePropertyMagicCookieData, &cookieSize, cookieDataPointer)
+        if let error = AudioTool.shared.decideStatus(status) {
+            print(error)
+            return nil
+            
+        }
+        
+        let cookie = Data.init(bytes: cookieDataPointer, count: Int(cookieSize))
+        return cookie
+        
+    }
+    
+    func parseData(isEof: inout Bool) -> [AudioParsedData]? {
+        var ioNumPackets = Self.PacketPerRead
+        var ioNumBytes = ioNumPackets * maxPacketSize
+        var outBuffer = UnsafeMutablePointer<Data>.allocate(capacity: Int(ioNumBytes))
+        defer {
+            free(outBuffer)
+        }
+        
+        var status: OSStatus
+        var outPacketDescriptionsPointer: (UnsafeMutablePointer<AudioStreamPacketDescription>)? = nil
+        
+        if format?.mFormatID == kAudioFormatLinearPCM {
+            let descSize: UInt32 = UInt32(MemoryLayout.size(ofValue: AudioStreamPacketDescription.self)) * ioNumPackets
+            outPacketDescriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(descSize))
+            status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
+            
+        }else {
+            
+            status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
+            
+        }
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            
+            if error.code == Int(kAudioFileEndOfFileError) {
+                isEof = true
+                
+            }else {
+                isEof = false
+                
+            }
+            
+            return nil
+            
+        }
+        
+        packetOffset += Int(ioNumPackets)
+        
+        if ioNumPackets > 0 && format != nil {
+            var parsedDataArray: [AudioParsedData] = []
+            
+            for index in 0 ..< Int(ioNumPackets) {
+                var packetDescription: AudioStreamPacketDescription
+                
+                if outPacketDescriptionsPointer != nil {
+                    packetDescription = outPacketDescriptionsPointer![index]
+                    
+                }else {
+                    packetDescription = AudioStreamPacketDescription.init(mStartOffset: Int64(index) * Int64(format!.mBytesPerPacket), mVariableFramesInPacket: format!.mFramesPerPacket, mDataByteSize: format!.mBytesPerPacket)
+                    
+                }
+                
+                let parsedData = AudioParsedData.init(bytes: outBuffer.advanced(by: Int(packetDescription.mStartOffset)), description: packetDescription)
+                
+                if (parsedData != nil) {
+                    parsedDataArray.append(parsedData!)
+                }
+                
+            }
+            
+            return parsedDataArray
+            
+        }
+        
+        return nil
+        
+    }
     
 }
 
@@ -288,12 +385,28 @@ extension YYAudioFile {
         
     }
     
+    func calculatepPacketDuration() {
+        guard let beingFormat = format, beingFormat.mSampleRate > 0 else {
+            return
+            
+        }
+        
+        packetDuration = Double(beingFormat.mFramesPerPacket) / beingFormat.mSampleRate
+        
+    }
+    
     func calculateDuration() {
         if (fileSize > 0 && bitRate > 0) {
             
             duration = Double((fileSize - Int64(dataOffset) * 8) / Int64(bitRate))
         }
     }
+    
+}
+
+// MARK: - 伪宏
+extension YYAudioFile {
+    static let PacketPerRead: UInt32 = 15
     
 }
 
