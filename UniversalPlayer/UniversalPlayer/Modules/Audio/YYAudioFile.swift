@@ -74,15 +74,7 @@ extension YYAudioFile {
     func openAudioFile() -> OSStatus {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
-//        let status = AudioFileOpenWithCallbacks(clientData, YYAudioFile.readProcListener, nil, YYAudioFile.getSizeProcListener, nil, fileType, &audioFileId)
-        
-        let status = AudioFileOpenWithCallbacks(clientData, { (inClientData, inPosition, requestCount, buffer, actualCountPointer) -> OSStatus in
-            return YYAudioFile.readProcListener(inClientData, inPosition: inPosition, requestCount: requestCount, buffer: buffer, actualCountPointer: actualCountPointer)
-            
-        }, nil, { (inClientData) -> Int64 in
-            return YYAudioFile.getSizeProcListener(inClientData)
-            
-        }, nil, fileType, &audioFileId)
+        let status = AudioFileOpenWithCallbacks(clientData, YYAudioFile.readProcHandler, nil, YYAudioFile.getSizeProcHandler, nil, fileType, &audioFileId)
         
         return status
         
@@ -328,9 +320,10 @@ extension YYAudioFile {
     
 }
 
-// MARK: - 监听
+// MARK: - 静态监听&处理
 extension YYAudioFile {
-    static private func readProcListener(_ filePointer: UnsafeMutableRawPointer, inPosition: Int64, requestCount: UInt32, buffer: UnsafeMutableRawPointer, actualCountPointer: UnsafeMutablePointer<UInt32>) -> OSStatus {
+    /// 读取
+    static private let readProcHandler: AudioFile_ReadProc = { (filePointer, inPosition, requestCount, buffer, actualCountPointer) -> OSStatus in
         
         let unsafeRawPointer = UnsafeRawPointer.init(filePointer)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
@@ -347,14 +340,13 @@ extension YYAudioFile {
         return noErr
     }
     
-    static private func getSizeProcListener(_ filePointer: UnsafeMutableRawPointer) -> Int64 {
+    /// 返回文件总长度
+    static private let getSizeProcHandler: AudioFile_GetSizeProc = { (filePointer) -> Int64 in
         let unsafeRawPointer = UnsafeRawPointer.init(filePointer)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         return audioFile.fileSize
-        
     }
-    
     
 }
 
