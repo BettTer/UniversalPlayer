@@ -18,28 +18,49 @@ class ViewController: UIViewController {
         
         // * 加载文件
         let filePath = Bundle.main.path(forResource: "情 乱 夜 梦 東 京 - Nanvo", ofType: "mp3")!
-        let file = FileHandle.init(forReadingAtPath: filePath)!
-        let fileSize = try! FileManager.default.attributesOfItem(atPath: filePath)[.size] as! Int
-        defer {
-            file.closeFile()
-        }
-        
-        audioStreamManager = AudioStreamManager.init(fileSize: UInt64(fileSize))
-        
-        if let error = audioStreamManager!.openAudioFileStream() {
-            print("初始化失败")
-            print("详情: \(error)")
-            audioStreamManager = nil
-            
-        }else {
-            print("初始化成功")
-            setupManagerWork(file: file, fileSize: fileSize)
-            
-        }
+//        let file = FileHandle.init(forReadingAtPath: filePath)!
+//        let fileSize = try! FileManager.default.attributesOfItem(atPath: filePath)[.size] as! Int
+//        defer {
+//            file.closeFile()
+//        }
+//
+//        audioStreamManager = AudioStreamManager.init(fileSize: UInt64(fileSize))
+//
+//        if let error = audioStreamManager!.openAudioFileStream() {
+//            print("初始化失败")
+//            print("详情: \(error)")
+//            audioStreamManager = nil
+//
+//        }else {
+//            print("初始化成功")
+//            setupManagerWork(file: file, fileSize: fileSize)
+//
+//        }
         
         
 //        let player = STKAudioPlayer.init()
 //        player.play(URL.init(string: "https://s320.xiami.net/259/23259/456120/1770378795_1518231746311.mp3?ccode=xiami_web_web&expire=86400&duration=215&psid=7a323645161be2d9fd9f7e62d88528fc&ups_client_netip=58.250.250.75&ups_ts=1595992774&ups_userid=0&utid=vlWcF5lJhiYCATr6+ktk+5A0&vid=1770378795&fn=1770378795_1518231746311.mp3&vkey=Bf285554922fafaa118dce8f106cfcc3a")!)
+        
+//        let filePath = Bundle.main.path(forResource: "MP3Sample", ofType: "mp3")!
+//        let audioFile = YYAudioFile.init(filePath: filePath)
+        let audioFile = YYAudioFile.init(filePath: filePath, fileType: kAudioFileMP3Type)
+        
+        if audioFile.audioFileId == nil {
+            return
+            
+        }
+        
+        
+        var isEof = false
+        
+        while !isEof {
+            let parsedDataArray = audioFile.parseData(isEof: &isEof)
+            print(parsedDataArray?.count)
+            
+        }
+        
+        
+        
         
         
     }

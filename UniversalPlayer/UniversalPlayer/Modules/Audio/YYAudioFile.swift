@@ -24,7 +24,7 @@ class YYAudioFile: NSObject {
     private var fileHandler: FileHandle?
     private var dataOffset = 0
     private var packetDuration: TimeInterval = 0
-    private var audioFileId: AudioFileID?
+    private (set) var audioFileId: AudioFileID?
     
     init(filePath: String, fileType: AudioFileTypeID = 0) {
         self.filePath = filePath
@@ -32,32 +32,30 @@ class YYAudioFile: NSObject {
         
         super.init()
         
-        setupData()
+//        if FileManager.default.fileExists(atPath: filePath) == true { // * 文件是否存在?
+//
+//
+//        }
         
+        setupData()
     }
     
     func setupData() {
-        if FileManager.default.fileExists(atPath: filePath) == false { // * 文件是否存在?
-            return
-            
-        }
-        
         fileHandler = FileHandle.init(forReadingAtPath: filePath)
         fileSize = try! FileManager.default.attributesOfItem(atPath: filePath)[.size] as! Int64
-        let error = AudioTool.shared.decideStatus(openAudioFile())
-                
-        guard fileSize != 0, error == nil else {
-            fileHandler!.closeFile()
-            
-            fileSize == 0 ? print("文件长度为0") : print("文件长度无问题")
-            error != nil ? print("打开文件出错: \(error!)") : print("打开文件无问题")
-         
+        
+        guard fileHandler != nil, fileSize > 0 else {
+            fileHandler?.closeFile()
             return
             
         }
         
-        fetchFormatInfo()
+        let status = openAudioFile()
         
+        if AudioTool.shared.decideStatus(status) == nil {
+            fetchFormatInfo()
+        }
+
     }
     
     deinit {
@@ -74,14 +72,14 @@ class YYAudioFile: NSObject {
 // MARK: - audiofile
 extension YYAudioFile {
     func openAudioFile() -> OSStatus {
-        
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
-        let status = AudioFileOpenWithCallbacks(clientData, { (inClientData, inPosition, requestCount, buffer, actualCount) -> OSStatus in
-            YYAudioFile.readProcListener(inClientData: inClientData, inPosition: inPosition, requestCount: requestCount, buffer: buffer, actualCount: actualCount)
+//        let status = AudioFileOpenWithCallbacks(clientData, YYAudioFile.readProcListener, nil, YYAudioFile.getSizeProcListener, nil, fileType, &audioFileId)
+        let status = AudioFileOpenWithCallbacks(clientData, { (a, b, c, d, e) -> OSStatus in
             
-        }, nil, { (inClientData) -> Int64 in
-            YYAudioFile.getSizeProcListener(inClientData: inClientData)
+            return noErr
+        }, nil, { (a) -> Int64 in
+            return 10
             
         }, nil, fileType, &audioFileId)
         
@@ -331,8 +329,7 @@ extension YYAudioFile {
 
 // MARK: - 监听
 extension YYAudioFile {
-    static func readProcListener(inClientData: UnsafeMutableRawPointer, inPosition: Int64, requestCount: UInt32, buffer: UnsafeMutableRawPointer, actualCount: UnsafeMutablePointer<UInt32>) -> OSStatus {
-        
+    static let readProcListener: AudioFile_ReadProc = { (inClientData, inPosition, requestCount, buffer, actualCount) -> OSStatus in
         let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
@@ -355,12 +352,14 @@ extension YYAudioFile {
         
     }
     
-    static func getSizeProcListener(inClientData: UnsafeMutableRawPointer) -> Int64 {
+    static let getSizeProcListener: AudioFile_GetSizeProc = { (inClientData) -> Int64 in
         let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         return audioFile.fileSize
+        
     }
+    
     
 }
 
