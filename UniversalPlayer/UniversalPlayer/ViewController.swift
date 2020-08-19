@@ -52,12 +52,14 @@ class ViewController: UIViewController {
         
         
         var isEof = false
+        let parsedDataArray = audioFile.parseData(isEof: &isEof)
+        print(parsedDataArray?.count)
         
-        while !isEof {
-            let parsedDataArray = audioFile.parseData(isEof: &isEof)
-            print(parsedDataArray?.count)
-            
-        }
+//        while !isEof {
+//
+//
+//
+//        }
         
         
         

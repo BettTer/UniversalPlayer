@@ -261,14 +261,14 @@ extension YYAudioFile {
         var status: OSStatus
         var outPacketDescriptionsPointer: (UnsafeMutablePointer<AudioStreamPacketDescription>)? = nil
         
-        if format?.mFormatID == kAudioFormatLinearPCM {
+        if format?.mFormatID != kAudioFormatLinearPCM {
             let descSize: UInt32 = UInt32(MemoryLayout<AudioStreamPacketDescription>.size) * ioNumPackets
             outPacketDescriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(descSize))
             status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
             
         }else {
             
-            status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
+            status = AudioFileReadPackets(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
             
         }
         
@@ -298,7 +298,10 @@ extension YYAudioFile {
                     packetDescription = outPacketDescriptionsPointer![index]
                     
                 }else {
-                    packetDescription = AudioStreamPacketDescription.init(mStartOffset: Int64(index) * Int64(format!.mBytesPerPacket), mVariableFramesInPacket: format!.mFramesPerPacket, mDataByteSize: format!.mBytesPerPacket)
+                    packetDescription = AudioStreamPacketDescription.init(
+                        mStartOffset: Int64(index) * Int64(format!.mBytesPerPacket),
+                        mVariableFramesInPacket: format!.mFramesPerPacket,
+                        mDataByteSize: format!.mBytesPerPacket)
                     
                 }
                 
