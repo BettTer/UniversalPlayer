@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0B4116A365D63979234DD384 /* Pods_UniversalPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */; };
-		49D59A4424D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49D59A4324D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */; };
 		9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583A24EA28D000E970EF /* PopViewController.swift */; };
 		9C12583E24EA28D000E970EF /* PopController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583B24EA28D000E970EF /* PopController.swift */; };
 		9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583C24EA28D000E970EF /* MenuViewController.swift */; };
@@ -26,11 +25,11 @@
 		9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9624EA279200E72FC3 /* ToolClass.swift */; };
 		9CC9DD9A24EA279200E72FC3 /* EnumSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9724EA279200E72FC3 /* EnumSet.swift */; };
 		9CD64E1724ECF3ED007EA15A /* MP3Sample.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 9CD64E1624ECF3ED007EA15A /* MP3Sample.mp3 */; };
+		9CD64E1B24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 9CD64E1A24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */; };
 		9CD9048824E138B2007022B8 /* YYAudioFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD9048724E138B2007022B8 /* YYAudioFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		49D59A4324D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "情 乱 夜 梦 東 京 - Nanvo.mp3"; sourceTree = "<group>"; };
 		580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UniversalPlayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C12583A24EA28D000E970EF /* PopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopViewController.swift; sourceTree = "<group>"; };
 		9C12583B24EA28D000E970EF /* PopController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopController.swift; sourceTree = "<group>"; };
@@ -52,6 +51,7 @@
 		9CC9DD9724EA279200E72FC3 /* EnumSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumSet.swift; sourceTree = "<group>"; };
 		9CD64E1524ECD050007EA15A /* RunloopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RunloopViewController.swift; path = ../../../../Test_ResponseEvent/Test_ResponseEvent/RunloopViewController.swift; sourceTree = "<group>"; };
 		9CD64E1624ECF3ED007EA15A /* MP3Sample.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = MP3Sample.mp3; sourceTree = "<group>"; };
+		9CD64E1A24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "情 乱 夜 梦 東 京 - Nanvo.mp3"; sourceTree = "<group>"; };
 		9CD9048724E138B2007022B8 /* YYAudioFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioFile.swift; sourceTree = "<group>"; };
 		A08D2D2B555611CC65DD77ED /* Pods-UniversalPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.debug.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		A84DDD5F278B0BEDF9DF0105 /* Pods-UniversalPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UniversalPlayer.release.xcconfig"; path = "Target Support Files/Pods-UniversalPlayer/Pods-UniversalPlayer.release.xcconfig"; sourceTree = "<group>"; };
@@ -80,10 +80,10 @@
 		49D59A4224D6DB0E009FC37E /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9CD64E1A24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */,
 				9C50034724D0082C00D0BD0B /* Assets.xcassets */,
 				9C50034924D0082C00D0BD0B /* LaunchScreen.storyboard */,
 				9C50034C24D0082C00D0BD0B /* Info.plist */,
-				49D59A4324D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */,
 				9CD64E1624ECF3ED007EA15A /* MP3Sample.mp3 */,
 			);
 			name = "Supporting Files";
@@ -240,9 +240,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9CD64E1B24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 in Resources */,
 				9C50034B24D0082C00D0BD0B /* LaunchScreen.storyboard in Resources */,
 				9CD64E1724ECF3ED007EA15A /* MP3Sample.mp3 in Resources */,
-				49D59A4424D6DB27009FC37E /* 情 乱 夜 梦 東 京 - Nanvo.mp3 in Resources */,
 				9C50034824D0082C00D0BD0B /* Assets.xcassets in Resources */,
 				9C50034624D0082B00D0BD0B /* Main.storyboard in Resources */,
 			);

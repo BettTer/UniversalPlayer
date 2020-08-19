@@ -75,11 +75,12 @@ extension YYAudioFile {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
 //        let status = AudioFileOpenWithCallbacks(clientData, YYAudioFile.readProcListener, nil, YYAudioFile.getSizeProcListener, nil, fileType, &audioFileId)
-        let status = AudioFileOpenWithCallbacks(clientData, { (a, b, c, d, e) -> OSStatus in
+        
+        let status = AudioFileOpenWithCallbacks(clientData, { (inClientData, inPosition, requestCount, buffer, actualCountPointer) -> OSStatus in
+            return YYAudioFile.readProcListener(inClientData, inPosition: inPosition, requestCount: requestCount, buffer: buffer, actualCountPointer: actualCountPointer)
             
-            return noErr
-        }, nil, { (a) -> Int64 in
-            return 10
+        }, nil, { (inClientData) -> Int64 in
+            return YYAudioFile.getSizeProcListener(inClientData)
             
         }, nil, fileType, &audioFileId)
         
@@ -329,31 +330,25 @@ extension YYAudioFile {
 
 // MARK: - 监听
 extension YYAudioFile {
-    static let readProcListener: AudioFile_ReadProc = { (inClientData, inPosition, requestCount, buffer, actualCount) -> OSStatus in
-        let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
+    static private func readProcListener(_ filePointer: UnsafeMutableRawPointer, inPosition: Int64, requestCount: UInt32, buffer: UnsafeMutableRawPointer, actualCountPointer: UnsafeMutablePointer<UInt32>) -> OSStatus {
+        
+        let unsafeRawPointer = UnsafeRawPointer.init(filePointer)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
-        audioFile.handleReadProcListener(inPosition: inPosition, requestCount: requestCount, buffer: buffer)
+        actualCountPointer.pointee = audioFile.availableDataLengthAtOffset(inPosition: inPosition, requestCount: requestCount)
         
-        return noErr
-        
-    }
-    
-    func handleReadProcListener(inPosition: Int64, requestCount: UInt32, buffer: UnsafeMutableRawPointer) {
-        let actualCount = availableDataLengthAtOffset(inPosition: inPosition, requestCount: requestCount)
-        
-        if actualCount > 0 {
-            fileHandler!.seek(toFileOffset: UInt64(inPosition))
-            let data = fileHandler!.readData(ofLength: Int(actualCount))
+        if actualCountPointer.pointee > 0 {
+            audioFile.fileHandler!.seek(toFileOffset: UInt64(inPosition))
+            let data = audioFile.fileHandler!.readData(ofLength: Int(actualCountPointer.pointee))
             memcpy(buffer, (data as NSData).bytes, data.count)
             
         }
         
-        
+        return noErr
     }
     
-    static let getSizeProcListener: AudioFile_GetSizeProc = { (inClientData) -> Int64 in
-        let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
+    static private func getSizeProcListener(_ filePointer: UnsafeMutableRawPointer) -> Int64 {
+        let unsafeRawPointer = UnsafeRawPointer.init(filePointer)
         let audioFile: YYAudioFile = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         return audioFile.fileSize
