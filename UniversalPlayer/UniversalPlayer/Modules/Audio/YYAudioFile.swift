@@ -97,13 +97,13 @@ extension YYAudioFile {
         if AudioTool.shared.decideStatus(infoStatus) == nil {
             var doesFoundFormat = false
             
-            var formatList = UnsafeMutablePointer<AudioFormatListItem>.allocate(capacity: Int(formatListSize))
+            var formatListPointer = UnsafeMutablePointer<AudioFormatListItem>.allocate(capacity: Int(formatListSize))
             defer {
-                free(formatList)
-                
+                free(formatListPointer)
+
             }
             
-            let propertyStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyFormatList, &formatListSize, &formatList)
+            let propertyStatus = AudioFileGetProperty(audioFileId!, kAudioFilePropertyFormatList, &formatListSize, formatListPointer)
             
             if AudioTool.shared.decideStatus(propertyStatus) == nil {
                 var supportedFormatsSize: UInt32 = 0
@@ -136,15 +136,16 @@ extension YYAudioFile {
                     
                     let endIndex = Int(formatListSize) / MemoryLayout<AudioFormatListItem>.size
                     
-                    for index in 0 ..< endIndex + 1 {
-                        let currentFormat = formatList[index].mASBD
+                    FindFormatLoop: for index in 0 ..< endIndex + 1 {
+                        let currentFormat = formatListPointer[index].mASBD
                         
                         for jndex in 0 ..< supportedFormatCount {
                             
                             if currentFormat.mFormatID == supportedFormats[Int(jndex)] {
                                 format = currentFormat
                                 doesFoundFormat = true
-                                break
+                                 
+                                break FindFormatLoop
                             }
                             
                             
