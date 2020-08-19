@@ -117,8 +117,7 @@ extension YYAudioFile {
                     return
                     
                 }else {
-                    
-                    let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout.size(ofValue: OSType.self))
+                    let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout<OSType>.size)
                     let supportedFormats = UnsafeMutablePointer<OSType>.allocate(capacity: Int(supportedFormatsSize))
                     defer {
                         free(supportedFormats)
@@ -135,7 +134,7 @@ extension YYAudioFile {
                         
                     }
                     
-                    let endIndex = Int(formatListSize) / MemoryLayout.size(ofValue: AudioFormatListItem.self)
+                    let endIndex = Int(formatListSize) / MemoryLayout<AudioFormatListItem>.size
                     
                     for index in 0 ..< endIndex + 1 {
                         let currentFormat = formatList[index].mASBD
@@ -262,7 +261,7 @@ extension YYAudioFile {
         var outPacketDescriptionsPointer: (UnsafeMutablePointer<AudioStreamPacketDescription>)? = nil
         
         if format?.mFormatID == kAudioFormatLinearPCM {
-            let descSize: UInt32 = UInt32(MemoryLayout.size(ofValue: AudioStreamPacketDescription.self)) * ioNumPackets
+            let descSize: UInt32 = UInt32(MemoryLayout<AudioStreamPacketDescription>.size) * ioNumPackets
             outPacketDescriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(descSize))
             status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
             

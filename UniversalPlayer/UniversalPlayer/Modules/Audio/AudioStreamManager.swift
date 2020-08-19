@@ -163,7 +163,7 @@ extension AudioStreamManager {
                 
             }
             
-            let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout.size(ofValue: OSType.self))
+            let supportedFormatCount = supportedFormatsSize / UInt32(MemoryLayout<OSType>.size)
             var supportedFormats = UnsafeMutablePointer<OSType>.allocate(capacity: Int(supportedFormatCount))
             defer { // * 预释放supportedFormats
                 free(supportedFormats)
@@ -175,7 +175,7 @@ extension AudioStreamManager {
                 
             }
             
-            let num = Int(formatListSize) / MemoryLayout.size(ofValue: AudioFormatListItem.self)
+            let num = Int(formatListSize) / MemoryLayout<AudioFormatListItem>.size
             
             for index in 0 ..< num + 1 {
                 let format = formatList[index].mASBD
@@ -250,7 +250,7 @@ extension AudioStreamManager {
         if descriptionsPointer == UnsafeMutablePointer<AudioStreamPacketDescription>(nil) {
             doesNeedToFreeMemory = true
             
-            let memorySize = MemoryLayout.size(ofValue: AudioStreamPacketDescription.self) * Int(numberPackets)
+            let memorySize = MemoryLayout<AudioStreamPacketDescription>.size * Int(numberPackets)
             // * malloc
             descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: memorySize)
             
