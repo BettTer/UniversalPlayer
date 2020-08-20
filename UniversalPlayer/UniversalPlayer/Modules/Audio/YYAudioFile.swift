@@ -321,6 +321,38 @@ extension YYAudioFile {
         
     }
     
+    /// 测试提取音频信息
+    func testToFetchMessage() {
+        var propertyDataSize: UInt32 = 0
+        var status = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyInfoDictionary, &propertyDataSize, nil)
+
+        if let _ = AudioTool.shared.decideStatus(status) {
+            return
+
+        }
+        
+        var infoDict = NSObject.init()
+        status = AudioFileGetProperty(audioFileId!, kAudioFilePropertyInfoDictionary, &propertyDataSize, &infoDict)
+        
+        if let _ = AudioTool.shared.decideStatus(status) {
+            return
+            
+        }else {
+            print(infoDict)
+            print(infoDict.classTypeName)
+            
+            
+            if let dict = infoDict as? [AnyHashable: Any] {
+                print(dict[kAFInfoDictionary_Title]!)
+                
+            }
+            
+            
+        }
+        
+        
+    }
+    
 }
 
 // MARK: - 静态监听&处理

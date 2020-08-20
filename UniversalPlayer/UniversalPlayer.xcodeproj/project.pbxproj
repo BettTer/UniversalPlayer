@@ -81,10 +81,10 @@
 			isa = PBXGroup;
 			children = (
 				9CD64E1A24ED12BC007EA15A /* 情 乱 夜 梦 東 京 - Nanvo.mp3 */,
+				9CD64E1624ECF3ED007EA15A /* MP3Sample.mp3 */,
 				9C50034724D0082C00D0BD0B /* Assets.xcassets */,
 				9C50034924D0082C00D0BD0B /* LaunchScreen.storyboard */,
 				9C50034C24D0082C00D0BD0B /* Info.plist */,
-				9CD64E1624ECF3ED007EA15A /* MP3Sample.mp3 */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -146,9 +146,9 @@
 				9CD64E1324ECCEE6007EA15A /* Example */,
 				9C2DA31C24D10FB000E776CF /* Common */,
 				9C50035224D0095000D0BD0B /* Modules */,
-				9C50033E24D0082B00D0BD0B /* AppDelegate.swift */,
 				9C50034224D0082B00D0BD0B /* ViewController.swift */,
 				9C50034424D0082B00D0BD0B /* Main.storyboard */,
+				9C50033E24D0082B00D0BD0B /* AppDelegate.swift */,
 				49D59A4224D6DB0E009FC37E /* Supporting Files */,
 			);
 			path = UniversalPlayer;

@@ -11,10 +11,11 @@ import Photos
 import AVFoundation
 
 // MARK: - 最最基础 ==============================
-extension NSObject{
+extension NSObject {
     /// 获取对象所属类名
-    @objc public var nameOfClass: String{
+    @objc public var classTypeName: String {
         return NSStringFromClass(type(of: self)).components(separatedBy: ".").last!
+//        return String(describing: type(of: self))
         
     }
     
