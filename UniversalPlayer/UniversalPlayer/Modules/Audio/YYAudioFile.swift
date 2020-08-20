@@ -264,27 +264,19 @@ extension YYAudioFile {
         if format?.mFormatID != kAudioFormatLinearPCM {
             let descSize: UInt32 = UInt32(MemoryLayout<AudioStreamPacketDescription>.size) * ioNumPackets
             outPacketDescriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(descSize))
-            status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
-            
-        }else {
-            
-            status = AudioFileReadPackets(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
             
         }
         
+        status = AudioFileReadPacketData(audioFileId!, false, &ioNumBytes, outPacketDescriptionsPointer, Int64(packetOffset), &ioNumPackets, outBuffer)
+        
         if let error = AudioTool.shared.decideStatus(status) {
-            
-            if error.code == Int(kAudioFileEndOfFileError) {
-                isEof = true
-                
-            }else {
-                isEof = false
-                
-            }
+            isEof = error.code == Int(kAudioFileEndOfFileError)
             
             return nil
             
         }
+        
+        isEof = ioNumBytes == 0 ? true : false
         
         packetOffset += Int(ioNumPackets)
         
@@ -320,7 +312,10 @@ extension YYAudioFile {
         return nil
         
     }
-    
+}
+
+// MARK: - 测试
+extension YYAudioFile {
     /// 测试提取音频信息
     func testToFetchMessage() {
         var propertyDataSize: UInt32 = 0
@@ -338,12 +333,8 @@ extension YYAudioFile {
             return
             
         }else {
-            print(infoDict)
-            print(infoDict.classTypeName)
-            
-            
             if let dict = infoDict as? [AnyHashable: Any] {
-                print(dict[kAFInfoDictionary_Title]!)
+                print("被读取音频文件的标题: \(dict[kAFInfoDictionary_Title]!)")
                 
             }
             
@@ -353,7 +344,9 @@ extension YYAudioFile {
         
     }
     
+    
 }
+
 
 // MARK: - 静态监听&处理
 extension YYAudioFile {
