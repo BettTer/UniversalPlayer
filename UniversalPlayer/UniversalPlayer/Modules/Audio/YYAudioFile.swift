@@ -348,7 +348,7 @@ extension YYAudioFile {
 }
 
 
-// MARK: - 静态监听&处理
+// MARK: - 静态监听 & 处理
 extension YYAudioFile {
     /// 读取
     static private let readProcHandler: AudioFile_ReadProc = { (filePointer, inPosition, requestCount, buffer, actualCountPointer) -> OSStatus in
