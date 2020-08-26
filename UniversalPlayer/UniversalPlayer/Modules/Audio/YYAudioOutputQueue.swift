@@ -10,11 +10,42 @@ import UIKit
 import AudioToolbox
 
 class YYAudioOutputQueue: NSObject {
-    var volume: Double = 1.0
+    var volume: Double = 0.0 {
+        didSet {
+            // * 设置音量
+            let _ = AudioQueueSetProperty(audioQueue!, kAudioQueueParam_Volume, &volume, UInt32(MemoryLayout.size(ofValue: volume)))
+            
+        }
+        
+    }
+    private (set) var playedTime: TimeInterval {
+        set {
+
+
+        }
+        
+        get {
+            if format.mSampleRate == 0 {
+                return 0
+                
+            }
+            
+            var timeStamp = AudioTimeStamp.init()
+            let status = AudioQueueGetCurrentTime(audioQueue!, nil, &timeStamp, nil);
+            
+            if let error = AudioTool.shared.decideStatus(status) {
+                print(error)
+                return 0
+                
+            }
+            
+            return timeStamp.mSampleTime / format.mSampleRate
+        }
+    }
     
     private (set) var isRunning = false
+    private (set) var isStartedPlaying = false
     private (set) var available = false
-    private (set) var playedTime: TimeInterval = 0
     
     private var format: AudioStreamBasicDescription!
     private let bufferSize: UInt32!
@@ -35,6 +66,11 @@ class YYAudioOutputQueue: NSObject {
         createAudioOutputQueue(with: magicCookie)
         mutexInit()
         
+    }
+    
+    deinit {
+        disposeAudioOutputQueue()
+        mutexDestory()
     }
 
 }
@@ -92,17 +128,147 @@ extension YYAudioOutputQueue {
         }
         
         // * 设置音量
-        let _ = AudioQueueSetProperty(audioQueue!, kAudioQueueParam_Volume, &volume, UInt32(MemoryLayout.size(ofValue: volume)))
+        volume = 1.0
         
     }
     
-    private func mutexInit() {
-        
+    private func disposeAudioOutputQueue() {
+        if let queue = audioQueue {
+            AudioQueueDispose(queue, true)
+            audioQueue = nil
+            
+        }
         
     }
-    
     
 }
+
+// MARK: - 播放控制
+extension YYAudioOutputQueue {
+    func start() -> NSError? {
+        let status = AudioQueueStart(audioQueue!, nil)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        isStartedPlaying = true
+        return nil
+
+    }
+    
+    func pause() -> NSError? {
+        let status = AudioQueuePause(audioQueue!)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        isStartedPlaying = false
+        return nil
+    }
+    
+    func reset() -> NSError? {
+        let status = AudioQueueReset(audioQueue!)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        return nil
+    }
+    
+    func flush() -> NSError? {
+        let status = AudioQueueFlush(audioQueue!)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        return nil
+    }
+    
+    func stop(immediately signal: Bool) -> NSError? {
+        let status = AudioQueueStop(audioQueue!, signal)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        isStartedPlaying = false
+        playedTime = 0
+        
+        return nil
+    }
+    
+    func play(with data: Data, packetCount: UInt32, inPacketDescs: UnsafePointer<AudioStreamPacketDescription>?, isEof: Bool) -> NSError? {
+        
+        if data.count > bufferSize {
+            return NSError.init(domain: "bufferSize长度问题", code: 205, userInfo: nil)
+            
+        }
+        
+        if reusableYYBufferList.count == 0 {
+            if isStartedPlaying == false, let error = start() {
+                return error
+                
+            }
+            
+            mutexWait()
+            
+        }
+        
+        var status: OSStatus
+        
+        var bufferObj: YYAudioQueueBuffer
+        var buffer = AudioQueueBufferRef.init(bitPattern: 0)
+        
+        
+        if reusableYYBufferList.count == 0 {
+            status = AudioQueueAllocateBuffer(audioQueue!, bufferSize, &buffer)
+            
+            if let error = AudioTool.shared.decideStatus(status) {
+                return error
+                
+            }
+            
+            bufferObj = YYAudioQueueBuffer.init(buffer: buffer!)
+            
+        }else {
+            bufferObj = reusableYYBufferList.removeFirst()
+            
+        }
+        
+        memcpy(bufferObj.buffer.pointee.mAudioData, (data as NSData).bytes, data.count)
+        bufferObj.buffer.pointee.mAudioDataByteSize = UInt32(data.count)
+        status = AudioQueueEnqueueBuffer(audioQueue!, bufferObj.buffer, packetCount, inPacketDescs)
+        
+        if let error = AudioTool.shared.decideStatus(status) {
+            return error
+            
+        }
+        
+        if reusableYYBufferList.count == 0 || isEof {
+            if isStartedPlaying == false, let error = start() {
+                return error
+                
+            }
+            
+        }
+        
+        
+        
+        return nil
+        
+    }
+    
+}
+
 
 // MARK: - 静态监听 & 处理
 extension YYAudioOutputQueue {
@@ -132,12 +298,6 @@ extension YYAudioOutputQueue {
         
     }
     
-    private func mutexSignal() {
-        pthread_mutex_lock(&mutex)
-        pthread_cond_signal(&cond)
-        pthread_mutex_unlock(&mutex)
-        
-    }
     
     static private let audioQueuePropertyListenerProc: AudioQueuePropertyListenerProc = { (userData, inAQ, inId) in
         if let pointer = userData {
@@ -160,6 +320,35 @@ extension YYAudioOutputQueue {
     }
     
 }
+
+// MARK: - pthead - mutex
+extension YYAudioOutputQueue {
+    private func mutexInit() {
+        pthread_mutex_init(&mutex, nil)
+        pthread_cond_init(&cond, nil)
+        
+    }
+    
+    private func mutexDestory() {
+        pthread_mutex_destroy(&mutex)
+        pthread_cond_destroy(&cond)
+    }
+    
+    private func mutexWait() {
+        pthread_mutex_lock(&mutex)
+        pthread_cond_wait(&cond, &mutex)
+        pthread_mutex_unlock(&mutex)
+    }
+    
+    private func mutexSignal() {
+        pthread_mutex_lock(&mutex)
+        pthread_cond_signal(&cond)
+        pthread_mutex_unlock(&mutex)
+        
+    }
+    
+}
+
 
 // MARK: - 伪宏
 extension YYAudioOutputQueue {
