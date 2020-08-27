@@ -357,7 +357,7 @@ extension YYAudioOutputQueue {
 }
 
  
-class YYAudioQueueBuffer: NSObject {
+private class YYAudioQueueBuffer: NSObject {
     var buffer: AudioQueueBufferRef!
     
     init(buffer: AudioQueueBufferRef) {

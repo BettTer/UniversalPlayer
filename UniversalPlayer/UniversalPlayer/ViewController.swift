@@ -47,13 +47,28 @@ class ViewController: UIViewController {
             return
 
         }
-
+        
         audioFile.testToFetchMessage()
-
-
+        
+        
         var isEof = false
         let parsedDataArray = audioFile.parseData(isEof: &isEof)
-        print(parsedDataArray?.count)
+        
+        let bufferSize = (0.2 / audioFile.duration) * Double(audioFile.audioDataByteCount)
+        let magicCookie = audioFile.fetchMagicCookie()
+        
+        let audioQueue = YYAudioOutputQueue.init(format: audioFile.format!, bufferSize: UInt32(bufferSize), magicCookie: magicCookie!)
+        
+        if let error = audioQueue.start() {
+            return
+            
+        }
+        
+//        audioQueue.play(with: <#T##Data#>, packetCount: <#T##UInt32#>, inPacketDescs: <#T##UnsafePointer<AudioStreamPacketDescription>?#>, isEof: <#T##Bool#>)
+        
+
+
+//        print(parsedDataArray?.count)
         
         
     }

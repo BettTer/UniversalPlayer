@@ -21,6 +21,7 @@
 		9C50034824D0082C00D0BD0B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034724D0082C00D0BD0B /* Assets.xcassets */; };
 		9C50034B24D0082C00D0BD0B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C50034924D0082C00D0BD0B /* LaunchScreen.storyboard */; };
 		9C50035424D0098700D0BD0B /* AudioTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C50035324D0098700D0BD0B /* AudioTool.swift */; };
+		9C63DF0324F792310052305C /* YYAudioBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C63DF0224F792310052305C /* YYAudioBuffer.swift */; };
 		9CA092BD24EE5A4F002D1D06 /* YYAudioOutputQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA092BC24EE5A4F002D1D06 /* YYAudioOutputQueue.swift */; };
 		9CC9DD9824EA279200E72FC3 /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */; };
 		9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC9DD9624EA279200E72FC3 /* ToolClass.swift */; };
@@ -47,6 +48,7 @@
 		9C50034A24D0082C00D0BD0B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9C50034C24D0082C00D0BD0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9C50035324D0098700D0BD0B /* AudioTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTool.swift; sourceTree = "<group>"; };
+		9C63DF0224F792310052305C /* YYAudioBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioBuffer.swift; sourceTree = "<group>"; };
 		9CA092BC24EE5A4F002D1D06 /* YYAudioOutputQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioOutputQueue.swift; sourceTree = "<group>"; };
 		9CC9DD9524EA279200E72FC3 /* BaseExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseExtensions.swift; sourceTree = "<group>"; };
 		9CC9DD9624EA279200E72FC3 /* ToolClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToolClass.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				9C50035324D0098700D0BD0B /* AudioTool.swift */,
+				9C63DF0224F792310052305C /* YYAudioBuffer.swift */,
 				9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */,
 				9CD9048724E138B2007022B8 /* YYAudioFile.swift */,
 				9CA092BC24EE5A4F002D1D06 /* YYAudioOutputQueue.swift */,
@@ -312,6 +315,7 @@
 				9CA092BD24EE5A4F002D1D06 /* YYAudioOutputQueue.swift in Sources */,
 				9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */,
 				9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */,
+				9C63DF0324F792310052305C /* YYAudioBuffer.swift in Sources */,
 				9C50033F24D0082B00D0BD0B /* AppDelegate.swift in Sources */,
 				9C50035424D0098700D0BD0B /* AudioTool.swift in Sources */,
 				9CC9DD9A24EA279200E72FC3 /* EnumSet.swift in Sources */,
