@@ -28,7 +28,7 @@ extension YYAudioBuffer {
         
     }
     
-    func dequeueData(requestSize: UInt32, packetCountPointer: UnsafeMutablePointer<UInt32>, descriptionsPointer: UnsafeMutablePointer<AudioStreamPacketDescription>) -> Data? {
+    func dequeueData(requestSize: UInt32, packetCountPointer: UnsafeMutablePointer<UInt32>, descriptionsPointer: inout UnsafeMutablePointer<AudioStreamPacketDescription>?) -> Data? {
         
         if requestSize == 0 && bufferBlockArray.count == 0 {
             return nil
@@ -63,9 +63,37 @@ extension YYAudioBuffer {
         }
         
         let count: UInt32 = targetIndex >= bufferBlockArray.count ? UInt32(bufferBlockArray.count) : UInt32(targetIndex) + 1
+        packetCountPointer.pointee = count
         
+        if count == 0 {
+            return nil
+            
+        }
         
+        if let _ = descriptionsPointer {
+            descriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: MemoryLayout<AudioStreamPacketDescription>.size * Int(count))
+            
+        }
         
+        var retData = Data.init()
+        
+        for index in 0 ..< Int(count) {
+            let parsedAudioData = bufferBlockArray[index]
+            
+            if let _ = descriptionsPointer {
+                var desc = parsedAudioData.packetDescription!
+                desc.mStartOffset = Int64(retData.count)
+                descriptionsPointer![index] = desc
+                
+            }
+            
+            retData.append(parsedAudioData.data)
+            
+        }
+        
+        bufferBlockArray.removeSubrange(0 ..< Int(count))
+        
+        return retData
     }
     
     
