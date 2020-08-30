@@ -14,6 +14,11 @@ class YYAudioBuffer: NSObject {
     
     private (set) var bufferBlockArray: [AudioParsedData] = []
     private (set) var bufferedSize: UInt32 = 0
+    
+    deinit {
+        bufferBlockArray.removeAll()
+        
+    }
 
 }
 
@@ -96,7 +101,10 @@ extension YYAudioBuffer {
         return retData
     }
     
+    func clean() {
+        bufferedSize = 0
+        bufferBlockArray.removeAll()
+    }
     
 }
 
-// AudioParsedData

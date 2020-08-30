@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B4116A365D63979234DD384 /* Pods_UniversalPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */; };
+		49AB071324FBC21E00CE494A /* YYAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AB071224FBC21E00CE494A /* YYAudioPlayer.swift */; };
 		9C12583D24EA28D000E970EF /* PopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583A24EA28D000E970EF /* PopViewController.swift */; };
 		9C12583E24EA28D000E970EF /* PopController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583B24EA28D000E970EF /* PopController.swift */; };
 		9C12583F24EA28D000E970EF /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12583C24EA28D000E970EF /* MenuViewController.swift */; };
@@ -32,6 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		49AB071224FBC21E00CE494A /* YYAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YYAudioPlayer.swift; sourceTree = "<group>"; };
 		580B6FD32CEE6D53FF16CB9F /* Pods_UniversalPlayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UniversalPlayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C12583A24EA28D000E970EF /* PopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopViewController.swift; sourceTree = "<group>"; };
 		9C12583B24EA28D000E970EF /* PopController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PopController.swift; sourceTree = "<group>"; };
@@ -120,10 +122,11 @@
 			children = (
 				9C50035324D0098700D0BD0B /* AudioTool.swift */,
 				9C63DF0224F792310052305C /* YYAudioBuffer.swift */,
-				9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */,
-				9CD9048724E138B2007022B8 /* YYAudioFile.swift */,
-				9CA092BC24EE5A4F002D1D06 /* YYAudioOutputQueue.swift */,
 				9C2DA32424D3C0B000E776CF /* AudioParsedData.swift */,
+				9CD9048724E138B2007022B8 /* YYAudioFile.swift */,
+				9C2DA31E24D1108500E776CF /* AudioStreamManager.swift */,
+				9CA092BC24EE5A4F002D1D06 /* YYAudioOutputQueue.swift */,
+				49AB071224FBC21E00CE494A /* YYAudioPlayer.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -311,6 +314,7 @@
 				9CC9DD9924EA279200E72FC3 /* ToolClass.swift in Sources */,
 				9C12583E24EA28D000E970EF /* PopController.swift in Sources */,
 				9C50034324D0082B00D0BD0B /* ViewController.swift in Sources */,
+				49AB071324FBC21E00CE494A /* YYAudioPlayer.swift in Sources */,
 				9C2DA31B24D10A7900E776CF /* GenericFuncs.swift in Sources */,
 				9CA092BD24EE5A4F002D1D06 /* YYAudioOutputQueue.swift in Sources */,
 				9C2DA32524D3C0B000E776CF /* AudioParsedData.swift in Sources */,
