@@ -10,7 +10,7 @@ import UIKit
 import CoreAudio
 
 class YYAudioBuffer: NSObject {
-    static let shared = YYAudioBuffer.init()
+    static let `default` = YYAudioBuffer.init()
     
     private (set) var bufferBlockArray: [AudioParsedData] = []
     private (set) var bufferedSize: UInt32 = 0

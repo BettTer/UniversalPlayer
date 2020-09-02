@@ -52,14 +52,14 @@ class ViewController: UIViewController {
         
         
         var isEof = false
-        let parsedDataArray = audioFile.parseData(isEof: &isEof)
+        let _ = audioFile.parseData(isEof: &isEof)
         
         let bufferSize = (0.2 / audioFile.duration) * Double(audioFile.audioDataByteCount)
         let magicCookie = audioFile.fetchMagicCookie()
         
         let audioQueue = YYAudioOutputQueue.init(format: audioFile.format!, bufferSize: UInt32(bufferSize), magicCookie: magicCookie!)
         
-        if let error = audioQueue.start() {
+        if let _ = audioQueue.start() {
             return
             
         }

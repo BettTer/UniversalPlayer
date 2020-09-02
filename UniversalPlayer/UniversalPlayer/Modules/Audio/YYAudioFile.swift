@@ -32,11 +32,6 @@ class YYAudioFile: NSObject {
         
         super.init()
         
-//        if FileManager.default.fileExists(atPath: filePath) == true { // * 文件是否存在?
-//
-//
-//        }
-        
         setupData()
     }
     
