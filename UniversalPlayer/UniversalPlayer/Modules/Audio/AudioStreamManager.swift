@@ -20,12 +20,12 @@ class AudioStreamManager: NSObject {
     let fileType: AudioFileTypeID
     let fileSize: UInt64
     
-    var bitRate: UInt32 = 0
-    var duration: TimeInterval = 0
+    private (set) var bitRate: UInt32 = 0
+    private (set) var duration: TimeInterval = 0
     
-    var format: AudioStreamBasicDescription = AudioStreamBasicDescription.init()
-    var maxPacketSize: UInt32 = 0
-    var audioDataByteCount: UInt64 = 0
+    private (set) var format: AudioStreamBasicDescription = AudioStreamBasicDescription.init()
+    private (set) var maxPacketSize: UInt32 = 0
+    private (set) var audioDataByteCount: UInt64 = 0
     
     weak var delegate: AudioStreamDelegate?
 

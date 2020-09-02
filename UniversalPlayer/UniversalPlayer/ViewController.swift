@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         let bufferSize = (0.2 / audioFile.duration) * Double(audioFile.audioDataByteCount)
         let magicCookie = audioFile.fetchMagicCookie()
         
-        let audioQueue = YYAudioOutputQueue.init(format: audioFile.format!, bufferSize: UInt32(bufferSize), magicCookie: magicCookie!)
+        let audioQueue = YYAudioOutputQueue.init(format: audioFile.format, bufferSize: UInt32(bufferSize), magicCookie: magicCookie!)
         
         if let _ = audioQueue.start() {
             return

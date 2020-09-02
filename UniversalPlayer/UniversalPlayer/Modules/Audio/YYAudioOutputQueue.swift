@@ -45,7 +45,6 @@ class YYAudioOutputQueue: NSObject {
     
     private (set) var isRunning = false
     private (set) var isStartedPlaying = false
-    private (set) var available = false
     
     private var format: AudioStreamBasicDescription!
     private let bufferSize: UInt32!
@@ -73,6 +72,15 @@ class YYAudioOutputQueue: NSObject {
         mutexDestory()
     }
 
+    
+    func doesSuccessfullyInit() -> Bool {
+        if let _ = audioQueue {
+            return true
+            
+        }
+        
+        return false
+    }
 }
 
 extension YYAudioOutputQueue {
@@ -129,7 +137,6 @@ extension YYAudioOutputQueue {
         
         // * 设置音量
         volume = 1.0
-        
     }
     
     private func disposeAudioOutputQueue() {

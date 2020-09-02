@@ -19,13 +19,21 @@ enum PlayerStatus: Int {
     
 }
 
+enum PlayerRealizeMode: Int {
+    case AudioStream = 0
+    case AudioFile
+    
+}
+
 class YYAudioPlayer: NSObject {
     let filePath: String!
     let fileType: AudioFileTypeID!
     /// 是否成功创建?
-    private (set) var isInitSuccessful = false
+    private (set) var doesSuccessfullyInit = false
     
     private (set) var currentStatus: PlayerStatus = .Stopped
+    /// 实现方式
+    private (set) var realizeMode: PlayerRealizeMode?
     private (set) var isPlayingOrWaiting = false
     
     private (set) var progress: TimeInterval = 0
@@ -67,7 +75,7 @@ class YYAudioPlayer: NSObject {
             
         }
         
-        isInitSuccessful = true
+        doesSuccessfullyInit = true
         
     }
 
@@ -144,6 +152,55 @@ extension YYAudioPlayer {
             
         }
         
+        let tmpDuration = duration
+        let audioDataByteCount: UInt64 = {
+            
+            if realizeMode == .AudioStream {
+                return audioFileStream!.audioDataByteCount
+                
+            }else if realizeMode == .AudioFile {
+                return audioFile!.audioDataByteCount
+                
+            }else {
+                return 0
+                
+            }
+            
+        }()
+        
+        if audioDataByteCount == 0 {
+            return false
+            
+        }
+        
+        
+        bufferSize = 0
+        
+        if tmpDuration != 0 {
+            bufferSize = UInt32((0.2 / tmpDuration) * Double(audioDataByteCount))
+            
+        }
+        
+        if bufferSize > 0 {
+            let format = realizeMode == .AudioStream ? audioFileStream!.format : audioFile!.format
+            let magicCookie = realizeMode == .AudioStream ? audioFileStream!.fetchMagicCookie() : audioFile!.fetchMagicCookie()
+            
+            audioQueue = YYAudioOutputQueue.init(format: format, bufferSize: bufferSize, magicCookie: magicCookie)
+            
+            if audioQueue!.doesSuccessfullyInit() == true {
+                return true
+                
+            }else {
+                audioQueue = nil
+                return false
+                
+            }
+            
+            
+        }else {
+            return false
+            
+        }
         
         
     }

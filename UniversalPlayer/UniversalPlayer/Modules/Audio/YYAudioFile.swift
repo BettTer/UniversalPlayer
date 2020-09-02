@@ -13,7 +13,7 @@ class YYAudioFile: NSObject {
     let filePath: String
     let fileType: AudioFileTypeID
     
-    private (set) var format: AudioStreamBasicDescription?
+    private (set) var format: AudioStreamBasicDescription = AudioStreamBasicDescription.init()
     private (set) var fileSize: Int64 = 0
     private (set) var duration: TimeInterval = 0
     private (set) var bitRate: UInt32 = 0
@@ -256,7 +256,7 @@ extension YYAudioFile {
         var status: OSStatus
         var outPacketDescriptionsPointer: (UnsafeMutablePointer<AudioStreamPacketDescription>)? = nil
         
-        if format?.mFormatID != kAudioFormatLinearPCM {
+        if format.mFormatID != kAudioFormatLinearPCM {
             let descSize: UInt32 = UInt32(MemoryLayout<AudioStreamPacketDescription>.size) * ioNumPackets
             outPacketDescriptionsPointer = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: Int(descSize))
             
@@ -286,9 +286,9 @@ extension YYAudioFile {
                     
                 }else {
                     packetDescription = AudioStreamPacketDescription.init(
-                        mStartOffset: Int64(index) * Int64(format!.mBytesPerPacket),
-                        mVariableFramesInPacket: format!.mFramesPerPacket,
-                        mDataByteSize: format!.mBytesPerPacket)
+                        mStartOffset: Int64(index) * Int64(format.mBytesPerPacket),
+                        mVariableFramesInPacket: format.mFramesPerPacket,
+                        mDataByteSize: format.mBytesPerPacket)
                     
                 }
                 
@@ -395,12 +395,13 @@ extension YYAudioFile {
     }
     
     func calculatepPacketDuration() {
-        guard let beingFormat = format, beingFormat.mSampleRate > 0 else {
+        if format.mSampleRate > 0 {
             return
             
         }
         
-        packetDuration = Double(beingFormat.mFramesPerPacket) / beingFormat.mSampleRate
+        
+        packetDuration = Double(format.mFramesPerPacket) / format.mSampleRate
         
     }
     
