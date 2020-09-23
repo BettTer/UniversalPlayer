@@ -245,7 +245,7 @@ extension YYAudioFile {
         
     }
     
-    func parseData(isEof: inout Bool) -> [AudioParsedData]? {
+    func parseData(isEof: inout Bool) -> [YYAudioParsedData]? {
         var ioNumPackets = Self.PacketPerRead
         var ioNumBytes = ioNumPackets * maxPacketSize
         var outBuffer = UnsafeMutablePointer<Data>.allocate(capacity: Int(ioNumBytes))
@@ -276,7 +276,7 @@ extension YYAudioFile {
         packetOffset += Int(ioNumPackets)
         
         if ioNumPackets > 0 && format != nil {
-            var parsedDataArray: [AudioParsedData] = []
+            var parsedDataArray: [YYAudioParsedData] = []
             
             for index in 0 ..< Int(ioNumPackets) {
                 var packetDescription: AudioStreamPacketDescription
@@ -292,7 +292,7 @@ extension YYAudioFile {
                     
                 }
                 
-                let parsedData = AudioParsedData.init(bytes: outBuffer.advanced(by: Int(packetDescription.mStartOffset)), description: packetDescription)
+                let parsedData = YYAudioParsedData.init(bytes: outBuffer.advanced(by: Int(packetDescription.mStartOffset)), description: packetDescription)
                 
                 if (parsedData != nil) {
                     parsedDataArray.append(parsedData!)

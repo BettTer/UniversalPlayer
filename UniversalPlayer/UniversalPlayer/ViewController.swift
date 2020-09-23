@@ -11,7 +11,7 @@ import StreamingKit
 
 class ViewController: UIViewController {
     
-    var audioStreamManager: AudioStreamManager?
+    var audioStreamManager: YYAudioStreamManager?
     
     override func viewDidLoad() {
         super.viewDidLoad()

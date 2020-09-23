@@ -10,13 +10,13 @@ import UIKit
 import AVFoundation
 //import CoreAudio
 
-protocol AudioStreamDelegate: Protocol {
-    func finishParseProperty(manager: AudioStreamManager)
-    func audioDataParsed(manager: AudioStreamManager, datas: [AudioParsedData])
+protocol YYAudioStreamDelegate: NSObjectProtocol {
+    func finishParseProperty(manager: YYAudioStreamManager)
+    func audioDataParsed(manager: YYAudioStreamManager, datas: [YYAudioParsedData])
     
 }
 
-class AudioStreamManager: NSObject {
+class YYAudioStreamManager: NSObject {
     let fileType: AudioFileTypeID
     let fileSize: UInt64
     
@@ -27,7 +27,7 @@ class AudioStreamManager: NSObject {
     private (set) var maxPacketSize: UInt32 = 0
     private (set) var audioDataByteCount: UInt64 = 0
     
-    weak var delegate: AudioStreamDelegate?
+    weak var delegate: YYAudioStreamDelegate?
 
     private var streamId: AudioFileStreamID?
     
@@ -46,6 +46,7 @@ class AudioStreamManager: NSObject {
         self.fileSize = fileSize
         
         super.init()
+        
     }
     
     /// 打开文件流
@@ -53,10 +54,10 @@ class AudioStreamManager: NSObject {
         let clientData = UnsafeMutableRawPointer.init(mutating: GenericFuncs.shared.bridge(obj: self))
         
         let status: OSStatus = AudioFileStreamOpen(clientData, { (selfPointer, streamId, propertyId, flags) in
-            AudioStreamManager.propertyListener(inClientData: selfPointer, streamId: streamId, propertyId: propertyId, ioFlags: flags)
+            YYAudioStreamManager.propertyListener(inClientData: selfPointer, streamId: streamId, propertyId: propertyId, ioFlags: flags)
             
         }, { (clientData, numberBytes, numberPackets, inputData, packetDescriptions) in
-            AudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions)
+            YYAudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions)
 
         }, fileType, &streamId)
         
@@ -84,12 +85,12 @@ class AudioStreamManager: NSObject {
 
 
 // MARK: - 监听
-extension AudioStreamManager {
+extension YYAudioStreamManager {
     /// 静态歌曲信息解析监听
     static func propertyListener(inClientData: UnsafeMutableRawPointer, streamId: AudioFileStreamID, propertyId: AudioFileStreamPropertyID, ioFlags: UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
         
         let unsafeRawPointer = UnsafeRawPointer.init(inClientData)
-        let manager: AudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
+        let manager: YYAudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         manager.handlePropertyListener(propertyId: propertyId, ioFlags: ioFlags)
         
@@ -229,7 +230,7 @@ extension AudioStreamManager {
         }
         
         let unsafeRawPointer = UnsafeRawPointer.init(clientData)
-        let manager: AudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
+        let manager: YYAudioStreamManager = GenericFuncs.shared.bridge(ptr: unsafeRawPointer)
         
         manager.handlePacketsProc(packets: inputData, numberBytes: numberBytes, numberPackets: numberPackets, packetDescriptionsPointer: packetDescriptionsPointer)
         
@@ -278,7 +279,7 @@ extension AudioStreamManager {
         } // * 不能因为有inPacketDescriptions没有返回NULL而判定音频数据就是VBR编码的
         
         
-        var array: [AudioParsedData] = []
+        var array: [YYAudioParsedData] = []
         
         for index in 0 ..< Int(numberPackets) {
             /// 获取帧偏移量
@@ -286,7 +287,7 @@ extension AudioStreamManager {
             
             let pointer = packets.advanced(by: Int(packetOffset))
             
-            if let parsedData = AudioParsedData.init(bytes: pointer, description: descriptionsPointer[index]) {
+            if let parsedData = YYAudioParsedData.init(bytes: pointer, description: descriptionsPointer[index]) {
                 
                 array.append(parsedData)
                 
@@ -318,7 +319,7 @@ extension AudioStreamManager {
 }
 
 // MARK: - Calculate
-extension AudioStreamManager {
+extension YYAudioStreamManager {
     func calculateBitRate() {
         if packetDuration != 0
             && processedPacketsCount > Self.BitRateEstimationMinPackets
@@ -350,7 +351,7 @@ extension AudioStreamManager {
 }
 
 // MARK: - Actions
-extension AudioStreamManager {
+extension YYAudioStreamManager {
     /// 获取MagicCookie
     func fetchMagicCookie() -> Data? {
         var cookieSize: UInt32 = 0
@@ -425,7 +426,7 @@ extension AudioStreamManager {
 }
 
 // MARK: - 伪宏
-extension AudioStreamManager {
+extension YYAudioStreamManager {
     static let BitRateEstimationMaxPackets = 5000
     static let BitRateEstimationMinPackets = 10
     

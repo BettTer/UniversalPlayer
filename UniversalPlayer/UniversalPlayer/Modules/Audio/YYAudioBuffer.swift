@@ -12,7 +12,7 @@ import CoreAudio
 class YYAudioBuffer: NSObject {
     static let `default` = YYAudioBuffer.init()
     
-    private (set) var bufferBlockArray: [AudioParsedData] = []
+    private (set) var bufferBlockArray: [YYAudioParsedData] = []
     private (set) var bufferedSize: UInt32 = 0
     
     deinit {
@@ -23,7 +23,7 @@ class YYAudioBuffer: NSObject {
 }
 
 extension YYAudioBuffer {
-    func enqueue(from audioParsedDatas: [AudioParsedData]) {
+    func enqueue(from audioParsedDatas: [YYAudioParsedData]) {
         bufferBlockArray = audioParsedDatas
         
         let _ = bufferBlockArray.map {

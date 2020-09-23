@@ -9,7 +9,7 @@
 import UIKit
 import CoreAudio
 
-class AudioParsedData: NSObject {
+class YYAudioParsedData: NSObject {
     let data: Data!
     let packetDescription: AudioStreamPacketDescription!
     

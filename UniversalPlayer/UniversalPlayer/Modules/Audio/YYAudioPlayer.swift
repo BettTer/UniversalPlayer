@@ -29,7 +29,7 @@ class YYAudioPlayer: NSObject {
     let filePath: String!
     let fileType: AudioFileTypeID!
     /// 是否成功创建?
-    private (set) var doesSuccessfullyInit = false
+    private (set) var isSuccessed = false
     
     private (set) var currentStatus: PlayerStatus = .Stopped
     /// 实现方式
@@ -51,7 +51,7 @@ class YYAudioPlayer: NSObject {
     private var bufferSize: UInt32 = 0
     private var buffer: YYAudioBuffer = YYAudioBuffer.default
     
-    private var audioFileStream: AudioStreamManager?
+    private var audioFileStream: YYAudioStreamManager?
     private var audioFile: YYAudioFile?
     private var audioQueue: YYAudioOutputQueue?
     
@@ -75,7 +75,7 @@ class YYAudioPlayer: NSObject {
             
         }
         
-        doesSuccessfullyInit = true
+        isSuccessed = true
         
     }
 
@@ -88,8 +88,6 @@ class YYAudioPlayer: NSObject {
     private func cleanup() {
         offset = 0
         fileHandler?.seek(toFileOffset: 0)
-        
-        #warning("待实现_处理通知")
         
         buffer.clean()
         
@@ -204,5 +202,49 @@ extension YYAudioPlayer {
         
         
     }
+    
+    private func threadMain() {
+        isSuccessed = false
+        
+        if let error = YYAudioSession.shared.setupAudioSession() {
+            print(error)
+            
+        }else {
+            audioFileStream = YYAudioStreamManager.init(fileSize: UInt64(fileSize))
+            
+            if let error = audioFileStream!.openAudioFileStream() {
+                print(error)
+                
+            }else {
+                isSuccessed = true
+                audioFileStream!.delegate = self
+            }
+            
+        }
+        
+        
+        if isSuccessed == false {
+            // * cleanUP
+            
+        }
+        
+        
+    }
+    
+}
+
+// MARK: - YYAudioStreamDelegate
+extension YYAudioPlayer: YYAudioStreamDelegate {
+    func finishParseProperty(manager: YYAudioStreamManager) {
+        
+        
+    }
+    
+    func audioDataParsed(manager: YYAudioStreamManager, datas: [YYAudioParsedData]) {
+        
+        
+    }
+    
+    
     
 }

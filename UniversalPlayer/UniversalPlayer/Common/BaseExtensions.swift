@@ -145,6 +145,20 @@ extension UIView {
     }
     
     
+    static private var BorderLayersKey = "BorderLayersKey"
+    private var borderLayers: [CAShapeLayer]? {
+        set {
+            objc_setAssociatedObject(self, &UIView.BorderLayersKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            
+        }
+        
+        get {
+            return objc_getAssociatedObject(self, &UIView.BorderLayersKey) as! [CAShapeLayer]?
+            
+        }
+    }
+    
+    
     /// 设置可选圆角与边框(外)
     /// - Parameters:
     ///   - corners: 需要圆角的部位
@@ -182,6 +196,18 @@ extension UIView {
         self.layer.mask = maskLayer
         
         if needBorder {
+            
+            // * 如果有之前的 先清掉
+            if let _ = borderLayers {
+                for borderLayer in borderLayers! {
+                    borderLayer.removeFromSuperlayer()
+                    
+                }
+                
+                borderLayers!.removeAll()
+            }
+            
+            borderLayers = []
             
             /// 边框线
             let borderPath = UIBezierPath.init(rect: self.bounds)
@@ -223,8 +249,6 @@ extension UIView {
                     self.setBorder(byRoundingPath: bottomRightCornerPath, color: borderColor!, width: borderWidth! * 2)
                 }
                 
-
-                
             }
             
         }
@@ -237,7 +261,7 @@ extension UIView {
         byRoundingPath path: UIBezierPath,
         color: UIColor,
         width: CGFloat) -> Void {
-                
+        
         /// 边框Layer
         let borderShapeLayer = CAShapeLayer.init()
         borderShapeLayer.path = path.cgPath
@@ -247,6 +271,11 @@ extension UIView {
         borderShapeLayer.lineWidth = width
         
         self.layer.addSublayer(borderShapeLayer)
+        
+        if let _ = borderLayers {
+            borderLayers!.append(borderShapeLayer)
+            
+        }
         
     }
     
