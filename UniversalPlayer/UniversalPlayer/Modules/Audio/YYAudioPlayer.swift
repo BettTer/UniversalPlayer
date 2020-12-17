@@ -335,11 +335,12 @@ extension YYAudioPlayer {
                         
                     }
                     
+                    // * play
                     if buffer.bufferedSize >= bufferSize || isEof {
                         var packetCount: UInt32 = 0
                         var descesPointer: UnsafeMutablePointer<AudioStreamPacketDescription>? = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: MemoryLayout<AudioStreamPacketDescription>.size)
                         
-                        var playData = buffer.dequeueData(requestSize: bufferSize, packetCountPointer: &packetCount, descriptionsPointer: &descesPointer)
+                        let playData = buffer.dequeueData(requestSize: bufferSize, packetCountPointer: &packetCount, descriptionsPointer: &descesPointer)
                         
                         defer {
                             free(descesPointer)
@@ -352,12 +353,14 @@ extension YYAudioPlayer {
                                 
                                 if let error = audioQueue?.play(with: data, packetCount: packetCount, inPacketDescs: descesPointer, isEof: isEof) {
                                     
+                                    print(error)
                                     break whileLoop
+                                    
                                 }
                                 
-                                if buffer.bufferBlockArray.count > 0, audioQueue?.isRunning == true {
+                                if buffer.bufferBlockArray.count > 0, audioQueue?.isRunning == true, isEof == true {
                                     let _ = audioQueue?.stop(immediately: false)
-                                    
+                                    currentStatus = .Flushing
                                     
                                 }
                                 
@@ -365,11 +368,49 @@ extension YYAudioPlayer {
                                  
                             }
                             
+                        }else if isEof == true {
+                            // * wait for end
+                            if !(buffer.bufferBlockArray.count > 0), audioQueue?.isRunning == true {
+                                let _ = audioQueue?.stop(immediately: false)
+                                currentStatus = .Flushing
+                                
+                            }
                             
+                        }else {
+                            isSuccessed = false
+                            break whileLoop
                             
                         }
                         
+                    }
+                    
+                    // * seek
+                    if seekRequired == true, duration != 0 {
+                        currentStatus = .Waiting
                         
+                        timingOffset = seekTime - (audioQueue?.playedTime ?? 0)
+                        
+                        buffer.clean()
+                        
+                        if let mode = realizeMode {
+                            switch mode {
+                            case .AudioFile:
+                                audioFile?.seekTo(time: seekTime)
+                                
+                            case .AudioStream:
+                                if let offset = audioFileStream?.seekTo(time: seekTime) {
+                                    fileHandler?.seek(toFileOffset: UInt64(offset))
+                                    
+                                }
+                                
+                            default:
+                                break
+                                
+                            }
+                        }
+                        
+                        seekRequired = false
+                        audioQueue?.reset()
                         
                     }
                     
@@ -381,7 +422,7 @@ extension YYAudioPlayer {
         }
         
         
-        
+        cleanup()
         
         
     }
