@@ -25,6 +25,16 @@ enum PlayerRealizeMode: Int {
     
 }
 
+enum PlayerOperatingType: Int {
+    /// 需要暂停
+    case pauseRequired = 0
+    /// 需要停止
+    case stopRequired
+    /// 打断导致暂停
+    case pausedByInterrupt
+    
+}
+
 class YYAudioPlayer: NSObject {
     let filePath: String!
     let fileType: AudioFileTypeID!
@@ -54,6 +64,9 @@ class YYAudioPlayer: NSObject {
     private var audioFileStream: YYAudioStreamManager?
     private var audioFile: YYAudioFile?
     private var audioQueue: YYAudioOutputQueue?
+    
+    private (set) var started = false
+    private (set) var operatingType: PlayerOperatingType?
     
     private var seekRequired = false
     private var seekTime: TimeInterval = 0
@@ -102,6 +115,10 @@ class YYAudioPlayer: NSObject {
         audioQueue = nil
         
         mutexDestory()
+        
+        started = false
+        
+        operatingType = nil
         
         seekRequired = false
         seekTime = 0
@@ -225,9 +242,175 @@ extension YYAudioPlayer {
         
         if isSuccessed == false {
             // * cleanUP
+            cleanup()
+            return
+        }
+        
+        currentStatus = .Waiting
+        var isEof = false
+        
+        
+        autoreleasepool {
+            
+            whileLoop: while currentStatus != .Stopped, isSuccessed == true, started == true {
+                
+                if realizeMode == .AudioFile {
+                    if audioFile == nil {
+                        audioFile = YYAudioFile.init(filePath: filePath)
+                        
+                    }
+                    
+                    audioFile!.seekTo(time: seekTime)
+                    
+                    if buffer.bufferedSize < bufferSize || audioQueue == nil {
+                        let parsedDatas = audioFile!.parseData(isEof: &isEof)
+                        
+                        if let datas = parsedDatas {
+                            buffer.enqueue(from: datas)
+                            
+                        }else {
+                            isSuccessed = false
+                            break whileLoop
+                            
+                        }
+                        
+                        
+                    }
+                    
+                    
+                    
+                }else if realizeMode == .AudioStream {
+                    if offset < fileSize && audioFileStream?.readyToProducePackets == false || buffer.bufferedSize < bufferSize || audioQueue == nil {
+                        
+                        if let data = fileHandler?.readData(ofLength: 1000) {
+                            offset += Int64(data.count)
+                            
+                            if offset >= fileSize {
+                                isEof = true
+                                
+                            }
+                            
+                            
+                            if audioFileStream!.parseData(data: data) != nil {
+                                realizeMode = .AudioFile
+                                continue whileLoop
+                                
+                            }
+
+                        }
+                        
+                    }
+                    
+                    
+                }
+                
+                if audioFileStream?.readyToProducePackets == true || realizeMode == .AudioFile {
+                    
+                    if createAudioQueue() == false {
+                        isSuccessed = false
+                        break whileLoop
+                        
+                    }
+                    
+                    if audioQueue == nil {
+                        continue whileLoop
+                        
+                    }
+                    
+                    if currentStatus == .Flushing, audioQueue!.isRunning == false {
+                        break whileLoop
+                        
+                    }
+                    
+                    if let type = operatingType {
+                        runOperation(with: type, handler: {
+                            operatingType = nil
+                        
+                        })
+                        
+                        if type == .stopRequired {
+                            break whileLoop
+                            
+                        }
+                        
+                    }
+                    
+                    if buffer.bufferedSize >= bufferSize || isEof {
+                        var packetCount: UInt32 = 0
+                        var descesPointer: UnsafeMutablePointer<AudioStreamPacketDescription>? = UnsafeMutablePointer<AudioStreamPacketDescription>.allocate(capacity: MemoryLayout<AudioStreamPacketDescription>.size)
+                        
+                        var playData = buffer.dequeueData(requestSize: bufferSize, packetCountPointer: &packetCount, descriptionsPointer: &descesPointer)
+                        
+                        defer {
+                            free(descesPointer)
+                        }
+                        
+                        if packetCount != 0 {
+                            currentStatus = .Playing
+                            
+                            if let data = playData {
+                                
+                                if let error = audioQueue?.play(with: data, packetCount: packetCount, inPacketDescs: descesPointer, isEof: isEof) {
+                                    
+                                    break whileLoop
+                                }
+                                
+                                if buffer.bufferBlockArray.count > 0, audioQueue?.isRunning == true {
+                                    let _ = audioQueue?.stop(immediately: false)
+                                    
+                                    
+                                }
+                                
+                                
+                                 
+                            }
+                            
+                            
+                            
+                        }
+                        
+                        
+                        
+                    }
+                    
+                }
+                
+                
+            }
             
         }
         
+        
+        
+        
+        
+    }
+    
+    /// 执行操作
+    private func runOperation(with type: PlayerOperatingType, handler: (() -> Void)) {
+        switch type {
+        case .pauseRequired:
+            currentStatus = .Paused
+            let _ = audioQueue?.pause()
+            mutexWait()
+            
+            break
+            
+        case .stopRequired:
+            started = false
+            let _ = audioQueue?.stop(immediately: true)
+            
+            break
+            
+        case .pausedByInterrupt:
+            break
+            
+        default:
+            break
+            
+        }
+        
+        handler()
         
     }
     

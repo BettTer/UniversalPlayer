@@ -1111,30 +1111,61 @@ extension AVAudioSession {
 
 
 extension PHPhotoLibrary {
-    static func authorizeToAlbum(callBack: @escaping (Bool) -> Void) {
+    /// 相册权限
+    static func authorizeToAlbum(handler: @escaping (PHAuthorizationStatus) -> Void) {
+        /*
+         @available(iOS 8, *)
+         case notDetermined = 0 // * 未决定
+
+         @available(iOS 8, *)
+         case restricted = 1 // * 无法访问且无法更改(例如已设置家长控制)
+         
+         @available(iOS 8, *)
+         case denied = 2 // * 已拒绝
+
+         @available(iOS 8, *)
+         case authorized = 3 // * 完全访问
+
+         @available(iOS 14, *)
+         case limited = 4 // * 部分访问
+         */
         
-        switch PHPhotoLibrary.authorizationStatus() {
-        case .authorized: // * 已授权
-            callBack(true)
+        var currentStatus: PHAuthorizationStatus!
+        
+        if #available(iOS 14, *) {
+            currentStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
             
-        case .denied: // * 已拒绝
-            callBack(false)
+        }else {
+            currentStatus = PHPhotoLibrary.authorizationStatus()
             
-        case .notDetermined: // * 未决定
-            // * 请求授权
-            PHPhotoLibrary.requestAuthorization({ (status) in
-                if status == .authorized {
-                    callBack(true)
-                    
-                } else {
-                    callBack(false)
+        }
+        
+        if currentStatus == .notDetermined { // * 未决定 先请求授权
+            
+            if #available(iOS 14, *) {
+                // * 请求授权
+                PHPhotoLibrary.requestAuthorization(for: .readWrite) { (futureStatus) in
+                    handler(futureStatus)
                     
                 }
-            })
+                
+            }else {
+                // * 请求授权
+                PHPhotoLibrary.requestAuthorization { (futureStatus) in
+                    handler(futureStatus)
+                    
+                }
+                
+            }
             
-        default: 
-            break
+            
+        }else {
+            handler(currentStatus)
+            
         }
+        
+        
+        
     }
 }
 

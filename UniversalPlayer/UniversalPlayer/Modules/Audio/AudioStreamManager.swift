@@ -37,7 +37,7 @@ class YYAudioStreamManager: NSObject {
     private var processedPacketsCount: UInt64 = 0
     private var processedPacketsSizeTotal: UInt64 = 0
     
-    private var readyToProducePackets = false
+    private (set) var readyToProducePackets = false
     private var discontinuous = false
     
     
@@ -57,7 +57,7 @@ class YYAudioStreamManager: NSObject {
             YYAudioStreamManager.propertyListener(inClientData: selfPointer, streamId: streamId, propertyId: propertyId, ioFlags: flags)
             
         }, { (clientData, numberBytes, numberPackets, inputData, packetDescriptions) in
-            YYAudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions)
+            YYAudioStreamManager.packetsProc(clientData: clientData, numberBytes: numberBytes, numberPackets: numberPackets, inputData: inputData, packetDescriptionsPointer: packetDescriptions!)
 
         }, fileType, &streamId)
         

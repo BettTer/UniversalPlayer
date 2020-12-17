@@ -219,13 +219,15 @@ extension YYAudioFile {
     }
     
     func fetchMagicCookie() -> Data? {
+        var status: OSStatus!
         
-        var cookieSize: UInt32 = 0
-        var status = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyMagicCookieData, &cookieSize, nil)
+        var cookieSize: UInt32 = UInt32(MemoryLayout<UInt32>.size)
+
+        status = AudioFileGetPropertyInfo(audioFileId!, kAudioFilePropertyMagicCookieData, &cookieSize, nil)
         if let error = AudioTool.shared.decideStatus(status) {
             print(error)
             return nil
-            
+
         }
 
         let cookieDataPointer = UnsafeMutablePointer<Data>.allocate(capacity: Int(cookieSize))
@@ -305,6 +307,11 @@ extension YYAudioFile {
         }
         
         return nil
+        
+    }
+    
+    func seekTo(time: TimeInterval) {
+        packetOffset = Int(floor(time / packetDuration))
         
     }
 }
