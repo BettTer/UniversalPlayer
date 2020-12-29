@@ -309,12 +309,16 @@ public class ToolClass: NSObject {
     /// 2.Dispatch Group的使用
     static func dispatchGroup() -> Void {
         let queueGroup = DispatchGroup.init()
+        let basicQueue = DispatchQueue(label: "basicQueue")
         
         for i in 0 ..< 9 {
-            let basicQueue = DispatchQueue(label: "basicQueue")
+            
+            queueGroup.enter()
+            
             basicQueue.async(group: queueGroup, execute: {
                 // 进行操作
                 printWithMessage("这是\(i)")
+                queueGroup.leave()
             })
         }
         

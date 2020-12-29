@@ -13,7 +13,8 @@ class ReadWirteLocking: NSObject {
     /// 并发队列
     static let concurrentQueue = DispatchQueue.init(label: "ReadWirteLocking_concurrentQueue", qos: .default, attributes: .concurrent, autoreleaseFrequency: .inherit, target: nil)
     
-    var recordTestObj: NSObject?
+    private var recordTestObj: NSObject?
+    
     var testObj: NSObject? {
         set {
             ReadWirteLocking.concurrentQueue.async(group: nil, qos: .default, flags: .barrier) {
