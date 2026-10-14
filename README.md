@@ -31,7 +31,7 @@ network / file  ->  parse  ->  buffer  ->  AudioQueue  ->  speaker
 
 ## Build
 
-Xcode, iOS 9.0+, Swift 5. Run `pod install` and open the workspace. The demo view controller plays an MP3 bundled with the app target. The player classes live on the `Dev_AudioQueue` branch; `master` holds the parsing layer.
+Xcode, iOS 9.0+, Swift 5. Run `pod install` and open the workspace. The demo view controller plays an MP3 bundled with the app target.
 
 ---
 
@@ -66,4 +66,4 @@ Xcode, iOS 9.0+, Swift 5. Run `pod install` and open the workspace. The demo vie
 
 ## 构建
 
-Xcode，iOS 9.0+，Swift 5。`pod install` 后打开 workspace。示例控制器会播放 app 内置的一首 MP3。播放器相关的类在 `Dev_AudioQueue` 分支，`master` 是解析层。
+Xcode，iOS 9.0+，Swift 5。`pod install` 后打开 workspace。示例控制器会播放 app 内置的一首 MP3。
